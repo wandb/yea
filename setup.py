@@ -6,10 +6,13 @@ from setuptools import setup
 
 setup(
     name='yea',
-    version='0.2',
+    version='0.2.1',
     description="Test harness breaking the sound barrier",
     packages=[
         'yea'
+    ],
+    install_requires=[
+        'importlib-metadata>=3.0.0',
     ],
     package_dir={'': 'src'},
     entry_points={
@@ -18,6 +21,7 @@ setup(
         ]
     },
     include_package_data=True,
+    package_data={'': ['yea/schema-*.json']},
     zip_safe=False,
     license="MIT license",
     python_requires='>=3.5',
