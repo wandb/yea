@@ -1,10 +1,11 @@
 """Base TestlibConfig classes."""
 
-import yaml
-
-from typing import Union, Dict, List
+from typing import Dict, List
 
 import jsonschema
+
+import yaml
+
 from .schema import validator
 
 
@@ -23,10 +24,10 @@ class TestlibConfig(dict):
 
         if not isinstance(d, TestlibConfig):
             # ensure the data conform to the schema
-            schema_violation_messages = schema_violations_from_proposed_config(d)
+            schema_violation_msgs = schema_violations_from_proposed_config(d)
 
-            if len(schema_violation_messages) > 0:
-                err_msg = "\n".join(schema_violation_messages)
+            if len(schema_violation_msgs) > 0:
+                err_msg = "\n".join(schema_violation_msgs)
                 raise jsonschema.ValidationError(err_msg)
 
     def __str__(self) -> str:

@@ -5,24 +5,24 @@ from setuptools import setup
 
 
 setup(
-    name='yea',
-    version='0.2.1',
+    name="yea",
+    version="0.2.2",
     description="Test harness breaking the sound barrier",
-    packages=[
-        'yea'
-    ],
+    packages=["yea"],
     install_requires=[
-        'importlib-metadata>=3.0.0',
+        "coverage",
+        "jsonschema",
+        "importlib-metadata>=3.0.0",
     ],
-    package_dir={'': 'src'},
+    package_dir={"": "src"},
     entry_points={
-        'console_scripts': [
-            'yea=yea.cli:cli',
+        "console_scripts": [
+            "yea=yea.cli:cli",
         ]
     },
     include_package_data=True,
-    package_data={'': ['yea/schema-*.json']},
+    package_data={"": ["yea/schema-*.json"]},
     zip_safe=False,
     license="MIT license",
-    python_requires='>=3.5',
+    python_requires=">=3.5",
 )

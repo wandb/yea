@@ -28,11 +28,6 @@ class TestRunner:
             tlist.append(t)
         self._test_list = tlist
 
-    def _old_populate(self):
-        for x in glob.glob("t_[0-9-]*_*.py"):
-            self._test_files.append(x)
-        self._test_files.sort()
-
     def _runall(self):
         for t in self._test_list:
             self._yc.monitors_reset()

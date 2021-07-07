@@ -3,9 +3,9 @@
 import os
 import pathlib
 import subprocess
+import sys
 
-from yea import testspec
-from yea import testcfg
+from yea import testcfg, testspec
 
 
 class YeaTest:

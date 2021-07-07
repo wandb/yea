@@ -1,8 +1,8 @@
 """Config class."""
 
 import configparser
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 class Config:

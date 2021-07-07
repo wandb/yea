@@ -1,7 +1,6 @@
 """yea context."""
 
-from yea import config
-from yea import plugins
+from yea import config, plugins
 
 
 class YeaContext:

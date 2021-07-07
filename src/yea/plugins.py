@@ -1,12 +1,11 @@
 """Plugins."""
 
 import sys
+
 if sys.version_info < (3, 10):
-    from importlib_metadata import entry_points
+    from importlib_metadata import entry_points  # type: ignore
 else:
     from importlib.metadata import entry_points
-
-
 
 
 class Plugins:
@@ -16,7 +15,7 @@ class Plugins:
         self._find_plugins()
 
     def _find_plugins(self):
-        discovered_plugins = entry_points(group='yea.plugins')
+        discovered_plugins = entry_points(group="yea.plugins")
         for p in discovered_plugins:
             # print("got", p)
             m = p.load()

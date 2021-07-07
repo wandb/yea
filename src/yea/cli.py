@@ -3,9 +3,7 @@
 import argparse
 import sys
 
-from yea import plugins
-from yea import runner
-from yea import context
+from yea import context, runner
 
 
 def cli_list(yc):
@@ -34,10 +32,8 @@ def cli():
     parse_list.set_defaults(func=cli_list)
 
     parse_run = subparsers.add_parser("run", aliases=["r"])
-    parse_run.add_argument(
-        "--all", action="store_true", help="Run all"
-    )
-    parse_run.add_argument('tests', nargs='*')
+    parse_run.add_argument("--all", action="store_true", help="Run all")
+    parse_run.add_argument("tests", nargs="*")
     parse_run.set_defaults(func=cli_run)
     args = parser.parse_args()
     if not args.action:

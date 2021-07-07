@@ -1,2 +1,5 @@
 src/yea.egg-info/
 __pycache__
+build/
+dist/
+mypy-results/
