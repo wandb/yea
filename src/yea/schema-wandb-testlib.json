@@ -6,22 +6,31 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "run": {
-            "type": "array",
-            "description": "List of runs expected",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "exit": {
-                        "type": "number",
-                        "format": "integer",
-                        "description": "Run exit",
-                        "multipleOf": 1.0
-                    },
-                    "config": {"type": "object", "description": "Config dictionary"},
-                    "summary": {"type": "object", "description": "Summary dictionary"}
-                },
-                "additionalProperties": false
+        "id": {
+            "type": "string",
+            "description": "Test id"
+        },
+        "check-ext-wandb": {
+            "type": "object",
+            "properties": {
+                "run": {
+                    "type": "array",
+                    "description": "List of runs expected",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "exit": {
+                                "type": "number",
+                                "format": "integer",
+                                "description": "Run exit",
+                                "multipleOf": 1.0
+                            },
+                            "config": {"type": "object", "description": "Config dictionary"},
+                            "summary": {"type": "object", "description": "Summary dictionary"}
+                        },
+                        "additionalProperties": false
+                    }
+                }
             }
         }
     }

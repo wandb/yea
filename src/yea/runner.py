@@ -18,9 +18,15 @@ class TestRunner:
 
     def _populate(self):
         tpaths = []
+        # TODO: clean up args parsing
+        args_tests = getattr(self._args, "tests", None)
+        if getattr(self._args, "all", None):
+            args_tests = None
         for tdir in self._cfg.test_dirs:
             path_dir = pathlib.Path(self._cfg.test_root, tdir)
             for tpath in path_dir.glob("t_[0-9-]*_*.py"):
+                if args_tests is not None and tpath.name not in args_tests:
+                    continue
                 tpaths.append(tpath)
         tlist = []
         for tname in sorted(tpaths):
