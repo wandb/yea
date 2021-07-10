@@ -30,8 +30,6 @@ class TestRunner:
         self._populate()
 
     def _get_args_list(self):
-        if getattr(self._args, "all", None):
-            return None
         # TODO: clean up args parsing
         args_tests = getattr(self._args, "tests", None)
         if not args_tests:
@@ -47,13 +45,19 @@ class TestRunner:
     def _populate(self):
         tpaths = []
 
-        args_tests = self._get_args_list()
+        args_tests = self._get_args_list() or []
+
+        all_tests = False
+        if self._args.action == "list" and not self._args.tests:
+            all_tests = True
+        if self._args.action == "run" and self._args.all:
+            all_tests = True
 
         for tdir in self._cfg.test_dirs:
             path_dir = pathlib.Path(self._cfg.test_root, tdir)
             # TODO: look for .yea, or look for .py with docstring
             for tpath in path_dir.glob("*.py"):
-                if args_tests is not None and str(tpath) not in args_tests:
+                if not all_tests and str(tpath) not in args_tests:
                     logger.debug("skip fname {}".format(tpath))
                     continue
                 docstr = testspec.load_docstring(tpath)
@@ -65,7 +69,7 @@ class TestRunner:
             for tpath in path_dir.glob("*.yea"):
                 # TODO: parse yea file looking for path info
                 py_fname = str(tpath)[:-4] + ".py"
-                if args_tests is not None and py_fname not in args_tests:
+                if not all_tests and py_fname not in args_tests:
                     logger.debug("skip yea fname {}".format(tpath))
                     continue
                 py_path = pathlib.Path(py_fname)

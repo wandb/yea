@@ -8,6 +8,7 @@ from yea import context, runner
 
 def cli_list(yc):
     print("Tests:")
+    yc._args.action = "list"
     tr = runner.TestRunner(yc=yc)
     tests = tr.get_tests()
     for t in tests:
@@ -15,6 +16,7 @@ def cli_list(yc):
 
 
 def cli_run(yc):
+    yc._args.action = "run"
     tr = runner.TestRunner(yc=yc)
     tr.run()
 
