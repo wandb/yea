@@ -1,10 +1,14 @@
 """test runner."""
 
+import logging
 import pathlib
 import re
 import sys
 
 from yea import testspec, ytest
+
+
+logger = logging.getLogger(__name__)
 
 
 def convert(text):
@@ -50,16 +54,19 @@ class TestRunner:
             # TODO: look for .yea, or look for .py with docstring
             for tpath in path_dir.glob("*.py"):
                 if args_tests is not None and str(tpath) not in args_tests:
+                    logger.debug("skip fname {}".format(tpath))
                     continue
                 docstr = testspec.load_docstring(tpath)
                 spec = testspec.load_yaml_from_docstring(docstr)
                 if not spec:
+                    logger.debug("skip nospec {}".format(tpath))
                     continue
                 tpaths.append(tpath)
             for tpath in path_dir.glob("*.yea"):
                 # TODO: parse yea file looking for path info
                 py_fname = str(tpath)[:-4] + ".py"
                 if args_tests is not None and py_fname not in args_tests:
+                    logger.debug("skip yea fname {}".format(tpath))
                     continue
                 py_path = pathlib.Path(py_fname)
                 tpaths.append(py_path)

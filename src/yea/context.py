@@ -1,13 +1,45 @@
 """yea context."""
 
+import datetime
+import logging
+import os
+
 from yea import config, plugins
 
 
 class YeaContext:
     def __init__(self, *, args):
         self._args = args
+        self._cachedir = None
+        self._now = datetime.datetime.now()
+        self._ts = self._now.strftime("%Y%m%dT%H%M%S")
+        self._pid = os.getpid()
         self._cfg = config.Config()
+        self._setup_cachedir()
+        self._setup_logging()
         self._plugs = plugins.Plugins(yc=self)
+
+    def _setup_cachedir(self):
+        root = self._cfg._cfroot
+        p = root.joinpath(".yea_cache")
+        if not p.exists():
+            p.mkdir()
+        self._cachedir = p
+
+    def _setup_logging(self):
+        logger = logging.getLogger("yea")
+        logger.propogate = False
+        logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            fmt="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        )
+        logfname = "debug-{}-{}.log".format(self._ts, self._pid)
+        lf = self._cachedir.joinpath(logfname)
+        fh = logging.FileHandler(lf)
+        fh.setFormatter(formatter)
+        fh.setLevel(logging.DEBUG)
+        logger.addHandler(fh)
+        logger.info("started")
 
     def is_live(self):
         return self._args.live
