@@ -11,13 +11,18 @@ class YeaContext:
     def __init__(self, *, args):
         self._args = args
         self._cachedir = None
+        self._covfile = None
         self._now = datetime.datetime.now()
         self._ts = self._now.strftime("%Y%m%dT%H%M%S")
         self._pid = os.getpid()
+        self._setup_env()
         self._cfg = config.Config()
         self._setup_cachedir()
         self._setup_logging()
         self._plugs = plugins.Plugins(yc=self)
+
+    def _setup_env(self):
+        self._covfile = os.environ.get("COVERAGE_FILE")
 
     def _setup_cachedir(self):
         root = self._cfg._cfroot

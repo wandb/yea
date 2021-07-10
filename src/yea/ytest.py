@@ -63,6 +63,15 @@ class YeaTest:
         """Cleanup and/or populate wandb dir."""
         self._yc.test_prep(self)
         # load file and docstring eval criteria
+        self._setup_coverage()
+
+    def _setup_coverage(self):
+        # dont mess with coverage_file (for now) if already set
+        if self._yc._covfile:
+            return
+        covfname = ".coverage-{}-{}".format(self._yc._pid, self.test_id)
+        covfile = self._yc._cachedir.joinpath(covfname)
+        os.environ["COVERAGE_FILE"] = str(covfile)
 
     def _fin(self):
         """Reap anything in wandb dir"""
