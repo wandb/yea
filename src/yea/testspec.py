@@ -20,19 +20,37 @@ def load_docstring(filepath):
     return docstring
 
 
-# From: github.com/marshmallow-code/apispec
-def load_yaml_from_docstring(docstring):
+def find_yaml_str(s):
     """Loads YAML from docstring."""
-    split_lines = docstring.split("\n")
+    split_lines = s.split("\n")
 
     # Cut YAML from rest of docstring
     for index, line in enumerate(split_lines):
         line = line.strip()
         if line.startswith("---"):
-            cut_from = index
-            break
-    else:
-        return None
+            # TODO: validate, capture type
+            # !<tag:wandb.ai,2021:yea>
+            cut_from = index + 1
+            yaml_string = "\n".join(split_lines[cut_from:])
+            return yaml_string
+    return None
 
-    yaml_string = "\n".join(split_lines[cut_from:])
+
+def load_yaml_from_docstring(docstring):
+    found = find_yaml_str(docstring)
+    if not found:
+        return None
+    return load_yaml_from_str(found)
+
+
+def load_yaml_from_str(yaml_string):
     return yaml.load(yaml_string, Loader=yaml.SafeLoader)
+
+
+def load_yaml_from_file(filepath):
+    file_contents = ""
+    with open(filepath) as fd:
+        file_contents = fd.read()
+    found = find_yaml_str(file_contents)
+    found = found or file_contents
+    return load_yaml_from_str(found)

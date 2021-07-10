@@ -11,7 +11,7 @@ def cli_list(yc):
     tr = runner.TestRunner(yc=yc)
     tests = tr.get_tests()
     for t in tests:
-        print("  ", t)
+        print("  ", t.test_id, ":", t.name)
 
 
 def cli_run(yc):
@@ -30,6 +30,7 @@ def cli():
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
     parse_list.set_defaults(func=cli_list)
+    parse_list.add_argument("tests", nargs="*")
 
     parse_run = subparsers.add_parser("run", aliases=["r"])
     parse_run.add_argument("--all", action="store_true", help="Run all")

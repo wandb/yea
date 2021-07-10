@@ -43,17 +43,26 @@ class YeaTest:
         print("DONE:", p.returncode)
         self._retcode = p.returncode
 
+    def _load(self):
+        spec = None
+        # load yea file if exists
+        if str(self._tname).endswith(".py"):
+            yea_name = str(self._tname)[:-3] + ".yea"
+            if os.path.exists(yea_name):
+                spec = testspec.load_yaml_from_file(yea_name)
+
+        if not spec:
+            docstr = testspec.load_docstring(self._tname)
+            spec = testspec.load_yaml_from_docstring(docstr)
+        # print("SPEC:", self._tname, spec)
+        cfg = testcfg.TestlibConfig(spec)
+        # print("TESTCFG", cfg)
+        self._test_cfg = cfg
+
     def _prep(self):
         """Cleanup and/or populate wandb dir."""
         self._yc.test_prep(self)
         # load file and docstring eval criteria
-
-        docstr = testspec.load_docstring(self._tname)
-        spec = testspec.load_yaml_from_docstring(docstr)
-        print("SPEC:", spec)
-        cfg = testcfg.TestlibConfig(spec)
-        print("TESTCFG", cfg)
-        self._test_cfg = cfg
 
     def _fin(self):
         """Reap anything in wandb dir"""
@@ -64,3 +73,19 @@ class YeaTest:
         if not self._args.dryrun:
             self._run()
         self._fin()
+
+    @property
+    def name(self):
+        root = self._yc._cfg._cfroot
+        b = self._tname.relative_to(root)
+        return str(b)
+
+    @property
+    def test_id(self):
+        tid = self._test_cfg.get("id") if self._test_cfg else None
+        return tid
+
+    @property
+    def _sort_key(self):
+        tid = self._test_cfg.get("id") if self._test_cfg else ""
+        return tid + ":" + self.name
