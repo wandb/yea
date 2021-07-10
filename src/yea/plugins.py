@@ -13,6 +13,7 @@ class Plugins:
         self._yc = yc
         self._plugin_list = []
         self._find_plugins()
+        self._plugs_needed = set()
 
     def _find_plugins(self):
         discovered_plugins = entry_points(group="yea.plugins")
@@ -23,20 +24,40 @@ class Plugins:
             plug = m.init_plugin(self._yc)
             self._plugin_list.append(plug)
 
+    def monitors_inform(self, tlist):
+        print("INFORM", tlist)
+        for p in self._plugin_list:
+            check_plugin_key = "check-ext-" + p.name
+            for t in tlist:
+                print("TST", t, t.config)
+                if check_plugin_key in t.config:
+                    self._plugs_needed.add(p.name)
+        print("PLUGS NEEDED", self._plugs_needed)
+
     def monitors_init(self):
         for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
+            print("INIT", p.name)
             p.monitors_init()
 
     def monitors_start(self):
         for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
+            print("START", p.name)
             p.monitors_start()
 
     def monitors_stop(self):
         for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
             p.monitors_stop()
 
     def monitors_reset(self):
         for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
             p.monitors_reset()
 
     def test_prep(self, yt):
@@ -51,8 +72,14 @@ class Plugins:
 
     def test_check(self, yt):
         # ctx = self._backend.get_state()
+        test_config = yt.config
         result_list = []
         for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
+            check_plugin_key = "check-ext-" + p.name
+            if check_plugin_key not in test_config:
+                continue
             result = p.test_check(yt)
             if result:
                 result_list.extend(result)

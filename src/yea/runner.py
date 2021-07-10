@@ -111,10 +111,12 @@ class TestRunner:
         self._results[t._tname] = result_str
 
     def run(self):
-        self._yc.monitors_init()
         try:
-            self._yc.monitors_start()
             self._populate()
+            # inform so we only start monitors needed
+            self._yc.monitors_inform(self.get_tests())
+            self._yc.monitors_init()
+            self._yc.monitors_start()
             self._runall()
             self.finish()
         finally:

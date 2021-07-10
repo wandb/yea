@@ -6,4 +6,6 @@ Tasks:
 - [x] Add logging
 - [ ] Add a way of specifying where sources are
 - [ ] make a coverage file prefix
-- [ ] show diffs
+- [ ] show cov diffs
+- [x] fix failing null test
+- [x] add plugin monitor controls

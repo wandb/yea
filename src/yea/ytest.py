@@ -89,3 +89,7 @@ class YeaTest:
     def _sort_key(self):
         tid = self._test_cfg.get("id") if self._test_cfg else ""
         return tid + ":" + self.name
+
+    @property
+    def config(self):
+        return self._test_cfg

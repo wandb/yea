@@ -44,6 +44,9 @@ class YeaContext:
     def is_live(self):
         return self._args.live
 
+    def monitors_inform(self, tlist):
+        self._plugs.monitors_inform(tlist)
+
     def monitors_init(self):
         self._plugs.monitors_init()
 
