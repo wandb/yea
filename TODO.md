@@ -9,3 +9,5 @@ Tasks:
 - [ ] show cov diffs
 - [x] fix failing null test
 - [x] add plugin monitor controls
+- [ ] fix schema validation between plugins
+- [ ] make shareable assert checks (dict includes, dict doesnt incl, regex keys)
