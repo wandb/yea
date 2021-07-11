@@ -7,6 +7,9 @@ from pathlib import Path
 
 class Config:
     def __init__(self):
+        self._coverage_config_template = None
+        self._coverage_source = None
+        self._coverage_source_env = None
         self._cfname = None
         self._cfroot = None
         self._cf = None
@@ -50,6 +53,13 @@ class Config:
         test_paths = ydict.get("test_paths", "")
         test_list = re.findall(r"[\S]+", test_paths)
         self._test_dirs = test_list
+        test_paths = ydict.get("test_paths", "")
+
+        self._coverage_config_template = ydict.get("coverage_config_template", "")
+        self._coverage_source = ydict.get("coverage_source")
+        self._coverage_source_env = ydict.get("coverage_source_env")
+        self._results_file = ydict.get("results_file")
+
         return test_list
 
     @property

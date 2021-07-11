@@ -5,6 +5,8 @@ import pathlib
 import re
 import sys
 
+import junit_xml
+
 from yea import testspec, ytest
 
 
@@ -25,7 +27,7 @@ class TestRunner:
         self._cfg = yc._cfg
         self._args = yc._args
         self._test_files = []
-        self._results = {}
+        self._results = []
         self._test_list = []
         self._populate()
 
@@ -112,7 +114,12 @@ class TestRunner:
         result = self._yc.test_check(t)
         print("GOTRES", result)
         result_str = ",".join(result)
-        self._results[t._tname] = result_str
+        # self._results[t._tname] = result_str
+        elapsed = t._time_end - t._time_start
+        tc = junit_xml.TestCase(t.test_id, classname="yea_func", elapsed_sec=elapsed)
+        if result_str:
+            tc.add_failure_info(message=result_str)
+        self._results.append(tc)
 
     def run(self):
         try:
@@ -126,12 +133,22 @@ class TestRunner:
         finally:
             self._yc.monitors_stop()
 
+    def _save_results(self):
+        res_fname = self._yc._cfg._results_file
+        if not res_fname:
+            return
+        p = self._yc._cfg._cfroot.joinpath(res_fname)
+        ts = junit_xml.TestSuite("yea-func", self._results)
+        with open(p, "w") as f:
+            junit_xml.TestSuite.to_file(f, [ts], prettyprint=False, encoding="utf-8")
+
     def finish(self):
+        self._save_results()
         exit = 0
-        r_names = sorted(self._results)
-        for k in r_names:
-            r = self._results[k]
-            print("{}: {}".format(k, r))
+        for tc in self._results:
+            # TODO: fix hack that only looks at first message
+            r = tc.failures[0]["message"] if tc.failures else ""
+            print("{}: {}".format(tc.name, r))
             if r:
                 exit = 1
         sys.exit(exit)

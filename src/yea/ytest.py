@@ -1,9 +1,11 @@
 """Yea test class."""
 
+import configparser
 import os
 import pathlib
 import subprocess
 import sys
+import time
 
 from yea import testcfg, testspec
 
@@ -15,6 +17,9 @@ class YeaTest:
         self._args = yc._args
         self._retcode = None
         self._test_cfg = None
+        self._covrc = None
+        self._time_start = None
+        self._time_end = None
 
     def __str__(self):
         return "{}".format(self._tname)
@@ -27,7 +32,10 @@ class YeaTest:
         os.chdir(tpath.parent)
         cmd = "./{}".format(tpath.name)
         # cmd_list = [cmd]
-        cmd_list = ["coverage", "run", cmd]
+        cmd_list = ["coverage", "run"]
+        if self._covrc:
+            cmd_list.extend(["--rcfile", str(self._covrc)])
+        cmd_list.extend([cmd])
         print("RUNNING", cmd_list)
         p = subprocess.Popen(cmd_list)
         try:
@@ -63,15 +71,47 @@ class YeaTest:
         """Cleanup and/or populate wandb dir."""
         self._yc.test_prep(self)
         # load file and docstring eval criteria
-        self._setup_coverage()
+        self._setup_coverage_file()
+        self._setup_coverage_config()
 
-    def _setup_coverage(self):
+    def _setup_coverage_file(self):
         # dont mess with coverage_file (for now) if already set
         if self._yc._covfile:
             return
         covfname = ".coverage-{}-{}".format(self._yc._pid, self.test_id)
         covfile = self._yc._cachedir.joinpath(covfname)
         os.environ["COVERAGE_FILE"] = str(covfile)
+
+    def _setup_coverage_config(self):
+        # do we have a template?
+        template = self._yc._cfg._coverage_config_template
+        if not template:
+            return
+        cov_src = self._yc._cfg._coverage_source
+        cov_env = self._yc._cfg._coverage_source_env
+        if cov_env:
+            cov_env_src = os.environ.get(cov_env)
+            if cov_env_src:
+                cov_src = cov_env_src
+        if not cov_src:
+            return
+
+        # find our sources
+        #   sourceis from tox (set in env)
+        #   or set from conf (if not in env)
+        p = self._yc._cfg._cfroot.joinpath(template)
+        assert p.exists()
+        cf = configparser.ConfigParser()
+        cf.read(p)
+
+        cf["run"]["source"] = cov_src
+
+        covrc_fname = "yea-covrc-{}-{}.conf".format(self._yc._pid, self.test_id)
+        covrc = self._yc._cachedir.joinpath(covrc_fname)
+        with open(covrc, "w") as configfile:
+            cf.write(configfile)
+
+        self._covrc = covrc
 
     def _fin(self):
         """Reap anything in wandb dir"""
@@ -80,7 +120,9 @@ class YeaTest:
     def run(self):
         self._prep()
         if not self._args.dryrun:
+            self._time_start = time.time()
             self._run()
+            self._time_end = time.time()
         self._fin()
 
     @property

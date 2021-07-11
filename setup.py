@@ -13,6 +13,7 @@ setup(
         "coverage",
         "jsonschema",
         "importlib-metadata>=3.0.0",
+        "junit-xml",
     ],
     package_dir={"": "src"},
     entry_points={
