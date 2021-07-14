@@ -6,7 +6,7 @@ import jsonschema
 
 import yaml
 
-from .schema import validator
+from .schema import validator, default_filler
 
 
 def schema_violations_from_proposed_config(config: Dict) -> List[str]:
@@ -29,6 +29,10 @@ class TestlibConfig(dict):
             if len(schema_violation_msgs) > 0:
                 err_msg = "\n".join(schema_violation_msgs)
                 raise jsonschema.ValidationError(err_msg)
+
+        # fill defaults not specified by user
+        default_filler.validate(d)
+
 
     def __str__(self) -> str:
         return repr(self)
