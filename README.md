@@ -1,3 +1,3 @@
 # yea
 
-Yea functional test harness
+Yea functional test harness.
