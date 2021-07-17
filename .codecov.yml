@@ -1,0 +1,34 @@
+codecov:
+  require_ci_to_pass: no
+  notify:
+    after_n_builds: 1
+    wait_for_ci: no
+
+coverage:
+  precision: 2
+  round: down
+  range: "50...100"
+  status:
+    project:
+      default:
+        threshold: 0.75%
+    patch:
+      other:
+        informational: true
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: no
+  after_n_builds: 1
+ 
+github_checks:
+  annotations: true
