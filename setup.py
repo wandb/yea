@@ -14,6 +14,7 @@ setup(
         "jsonschema",
         "importlib-metadata>=3.0.0",
         "junit-xml",
+        "PyYAML",
     ],
     package_dir={"": "src"},
     entry_points={

@@ -24,9 +24,7 @@ def cli_run(yc):
 def cli():
     parser = argparse.ArgumentParser()
 
-    subparsers = parser.add_subparsers(
-        dest="action", title="action", description="Action to perform"
-    )
+    subparsers = parser.add_subparsers(dest="action", title="action", description="Action to perform")
     parser.add_argument("--dryrun", action="store_true", help="Dont do anything")
     parser.add_argument("--live", action="store_true", help="Run against real server")
 
