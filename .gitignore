@@ -7,3 +7,4 @@ cover-results/
 .tox/
 .idea/
 .coverage
+coverage.xml
