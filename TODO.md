@@ -14,3 +14,6 @@ Tasks:
 - [x] add pytest, mypy, coverage
 - [ ] fix mypy asserts
 - [ ] increase coverage
+- [ ] yea should copy files and run in work dir
+- [ ] yea should support directory tests
+- [ ] add check expressions
