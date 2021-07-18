@@ -11,3 +11,6 @@ Tasks:
 - [x] add plugin monitor controls
 - [ ] fix schema validation between plugins
 - [ ] make shareable assert checks (dict includes, dict doesnt incl, regex keys)
+- [x] add pytest, mypy, coverage
+- [ ] fix mypy asserts
+- [ ] increase coverage
