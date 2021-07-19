@@ -54,11 +54,13 @@ class YeaTest:
     def _load(self):
         spec = None
         # load yea file if exists
-        if str(self._tname).endswith(".py"):
-            yea_name = str(self._tname)[:-3] + ".yea"
+        fname = str(self._tname)
+        if fname.endswith(".py"):
+            yea_name = fname[:-3] + ".yea"
             if os.path.exists(yea_name):
                 spec = testspec.load_yaml_from_file(yea_name)
-
+        elif fname.endswith(".yea"):
+            spec = testspec.load_yaml_from_file(fname)
         if not spec:
             docstr = testspec.load_docstring(self._tname)
             spec = testspec.load_yaml_from_docstring(docstr)

@@ -10,6 +10,18 @@
             "type": "string",
             "description": "Test id"
         },
+        "assert": {
+            "type": "array",
+	    "items": {
+                "type": "object"
+            }
+	},
+        "var": {
+            "type": "array",
+	    "items": {
+                "type": "object"
+            }
+	},
         "check-ext-wandb": {
             "type": "object",
             "properties": {
