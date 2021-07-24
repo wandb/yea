@@ -22,6 +22,12 @@
                 "type": "object"
             }
 	},
+        "env": {
+            "type": "array",
+	    "items": {
+                "type": "object"
+            }
+	},
         "check-ext-wandb": {
             "type": "object",
             "properties": {

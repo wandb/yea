@@ -26,7 +26,7 @@ class YeaTest:
 
     def _run(self):
         tname = self._tname
-        print("RUN:", tname)
+        print("INFO: RUN=", tname)
         cmd = "./{}".format(tname)
         tpath = pathlib.Path(tname)
         os.chdir(tpath.parent)
@@ -36,8 +36,12 @@ class YeaTest:
         if self._covrc:
             cmd_list.extend(["--rcfile", str(self._covrc)])
         cmd_list.extend([cmd])
-        print("RUNNING", cmd_list)
-        p = subprocess.Popen(cmd_list)
+        print("INFO: RUNNING=", cmd_list)
+        env = os.environ.copy()
+        elist = self._test_cfg.get("env", [])
+        for edict in elist:
+            env.update(edict)
+        p = subprocess.Popen(cmd_list, env=env)
         try:
             p.communicate(timeout=120)
         except subprocess.TimeoutExpired:
@@ -48,7 +52,7 @@ class YeaTest:
             except subprocess.TimeoutExpired:
                 print("ERROR: double timeout")
                 sys.exit(1)
-        print("DONE:", p.returncode)
+        # print("DONE:", p.returncode)
         self._retcode = p.returncode
 
     def _load(self):

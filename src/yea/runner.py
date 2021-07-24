@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """test runner."""
 
 import logging
@@ -112,7 +113,7 @@ class TestRunner:
             # we are live
             return
         result = self._yc.test_check(t)
-        print("GOTRES", result)
+        # print("GOTRES", result)
         result_str = ",".join(result)
         # self._results[t._tname] = result_str
         elapsed = t._time_end - t._time_start
@@ -145,10 +146,17 @@ class TestRunner:
     def finish(self):
         self._save_results()
         exit = 0
+        print("\nResults:")
+        print("--------")
+        tlen = max([len(tc.name) for tc in self._results])
         for tc in self._results:
             # TODO: fix hack that only looks at first message
             r = tc.failures[0]["message"] if tc.failures else ""
-            print("{}: {}".format(tc.name, r))
+            emoji = "😃"
+            if r:
+                emoji = '🐴 "Neigh" -- '
+
+            print("  {:<{}s}: {}{}".format(tc.name, tlen, emoji, r))
             if r:
                 exit = 1
         sys.exit(exit)
