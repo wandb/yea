@@ -1,6 +1,7 @@
 """Yea test class."""
 
 import configparser
+import itertools
 import os
 import pathlib
 import subprocess
@@ -20,6 +21,8 @@ class YeaTest:
         self._covrc = None
         self._time_start = None
         self._time_end = None
+        self._permute_groups = None
+        self._permute_items = None
 
     def __str__(self):
         return "{}".format(self._tname)
@@ -41,6 +44,9 @@ class YeaTest:
         elist = self._test_cfg.get("env", [])
         for edict in elist:
             env.update(edict)
+        if self._permute_groups and self._permute_items:
+            env["YEA_PERMUTE_GRP"] = ",".join(self._permute_groups)
+            env["YEA_PERMUTE_VAL"] = ",".join(self._permute_items)
         p = subprocess.Popen(cmd_list, env=env)
         try:
             p.communicate(timeout=120)
@@ -130,6 +136,35 @@ class YeaTest:
             self._run()
             self._time_end = time.time()
         self._fin()
+
+    def get_permutations(self):
+        self._load()
+        perm = self._test_cfg.get("permute")
+        if not perm:
+            return [self]
+        groups = perm.get("group", [])
+        gnames = []
+        glist = []
+        for g in groups:
+            assert isinstance(g, dict)
+            assert len(g) == 1
+            k = next(iter(g))
+            gnames.append(k)
+            v = g[k]
+            assert isinstance(v, list)
+            glist.append(v)
+        items = list(itertools.product(*glist))
+        r = []
+        for tnum, it in enumerate(items):
+            t = YeaTest(tname=self._tname, yc=self._yc)
+            t._load()
+            t._permute_groups = gnames
+            t._permute_items = it
+            tid = t._test_cfg.get("id")
+            if tid:
+                t._test_cfg["id"] = "{}.{}".format(tid, tnum)
+            r.append(t)
+        return r
 
     @property
     def name(self):

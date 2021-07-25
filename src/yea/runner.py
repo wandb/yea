@@ -81,8 +81,8 @@ class TestRunner:
         tlist = []
         for tname in tpaths:
             t = ytest.YeaTest(tname=tname, yc=self._yc)
-            t._load()
-            tlist.append(t)
+            test_perms = t.get_permutations()
+            tlist.extend(test_perms)
 
         tlist.sort(key=alphanum_sort)
         self._test_list = tlist
@@ -148,6 +148,8 @@ class TestRunner:
         exit = 0
         print("\nResults:")
         print("--------")
+        if not self._results:
+            sys.exit(exit)
         tlen = max([len(tc.name) for tc in self._results])
         for tc in self._results:
             # TODO: fix hack that only looks at first message
