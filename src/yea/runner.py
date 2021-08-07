@@ -2,6 +2,7 @@
 """test runner."""
 
 import logging
+import os
 import pathlib
 import re
 import sys
@@ -45,6 +46,20 @@ class TestRunner:
             alist.append(str(p))
         return alist
 
+    def _get_dirs(self):
+        # generate to return all test dirs and rcursively found dirs
+        for tdir in self._cfg.test_dirs:
+            path_dir = pathlib.Path(self._cfg.test_root, tdir)
+            yield path_dir
+            for root, dirs, _ in os.walk(path_dir, topdown=True):
+                # TODO: temporary hack to avoid walking into wandb dir
+                # use .gitignore instead
+                if "wandb" in dirs:
+                    dirs.remove("wandb")
+                for d in dirs:
+                    path_dir = pathlib.Path(self._cfg.test_root, root, d)
+                    yield path_dir
+
     def _populate(self):
         tpaths = []
 
@@ -56,8 +71,7 @@ class TestRunner:
         if self._args.action == "run" and self._args.all:
             all_tests = True
 
-        for tdir in self._cfg.test_dirs:
-            path_dir = pathlib.Path(self._cfg.test_root, tdir)
+        for path_dir in self._get_dirs():
             # TODO: look for .yea, or look for .py with docstring
             for tpath in path_dir.glob("*.py"):
                 if not all_tests and str(tpath) not in args_tests:

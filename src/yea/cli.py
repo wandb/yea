@@ -11,7 +11,8 @@ def cli_list(yc):
     yc._args.action = "list"
     tr = runner.TestRunner(yc=yc)
     tests = tr.get_tests()
-    tlen = max([len(t.test_id) for t in tests])
+    test_ids = [len(t.test_id) for t in tests]
+    tlen = max(test_ids) if test_ids else 0
     for t in tests:
         print("  {:<{}s}: {}".format(t.test_id, tlen, t.name))
 

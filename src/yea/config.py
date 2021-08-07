@@ -1,6 +1,7 @@
 """Config class."""
 
 import configparser
+import os
 import re
 from pathlib import Path
 
@@ -57,6 +58,9 @@ class Config:
 
         self._coverage_config_template = ydict.get("coverage_config_template", "")
         self._coverage_source = ydict.get("coverage_source")
+        # TODO: clean up how this works, user could already have an absolute path
+        if self._coverage_source and self.test_root:
+            self._coverage_source = os.path.join(self.test_root, self._coverage_source)
         self._coverage_source_env = ydict.get("coverage_source_env")
         self._results_file = ydict.get("results_file")
 
