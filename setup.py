@@ -26,5 +26,5 @@ setup(
     package_data={"": ["yea/schema-*.json"]},
     zip_safe=False,
     license="MIT license",
-    python_requires=">=3.5",
+    python_requires=">=3.6",
 )
