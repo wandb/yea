@@ -39,6 +39,8 @@ class YeaTest:
         if self._covrc:
             cmd_list.extend(["--rcfile", str(self._covrc)])
         cmd_list.extend([cmd])
+        args = self._test_cfg.get("command-args", [])
+        cmd_list.extend(args)
         print("INFO: RUNNING=", cmd_list)
         env = os.environ.copy()
         elist = self._test_cfg.get("env", [])

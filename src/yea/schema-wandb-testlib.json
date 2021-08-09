@@ -12,25 +12,31 @@
         },
         "assert": {
             "type": "array",
-	    "items": {
+            "items": {
                 "type": "object"
             }
-	},
+        },
         "var": {
             "type": "array",
-	    "items": {
+            "items": {
                 "type": "object"
             }
-	},
+        },
         "env": {
             "type": "array",
-	    "items": {
+            "items": {
                 "type": "object"
             }
-	},
-	"permute": {
+        },
+        "command-args": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "permute": {
             "type": "object"
-	},
+        },
         "check-ext-wandb": {
             "type": "object",
             "properties": {
