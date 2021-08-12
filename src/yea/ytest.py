@@ -4,7 +4,6 @@ import configparser
 import itertools
 import os
 import pathlib
-import shutil
 import subprocess
 import sys
 import time
@@ -40,7 +39,8 @@ def download(url, fname):
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
             with open(fname, "wb") as f:
-                shutil.copyfileobj(r.raw, f)
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
     except requests.exceptions.HTTPError as e:
         print("ERROR: url download error", url, e)
         err = True
