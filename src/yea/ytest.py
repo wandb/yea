@@ -4,11 +4,47 @@ import configparser
 import itertools
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import time
 
+import requests
+
 from yea import testcfg, testspec
+
+
+def run_command(cmd_list, timeout=None, env=None):
+    env = env or os.environ
+    timeout = timeout or 300
+    print("INFO: RUNNING=", cmd_list)
+    p = subprocess.Popen(cmd_list, env=env)
+    try:
+        p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        print("ERROR: TIMEOUT")
+        p.kill()
+        try:
+            p.communicate(timeout=30)
+        except subprocess.TimeoutExpired:
+            print("ERROR: double timeout")
+            sys.exit(1)
+    print("INFO: exit=", p.returncode)
+    return p.returncode
+
+
+def download(url, fname):
+    err = False
+    print(f"INFO: grabbing {fname} from {url}")
+    try:
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(fname, "wb") as f:
+                shutil.copyfileobj(r.raw, f)
+    except requests.exceptions.HTTPError as e:
+        print("ERROR: url download error", url, e)
+        err = True
+    return err
 
 
 class YeaTest:
@@ -27,6 +63,42 @@ class YeaTest:
     def __str__(self):
         return "{}".format(self._tname)
 
+    def _depend_files(self):
+        err = False
+        dep = self._test_cfg.get("depend", {})
+        files = dep.get("files", [])
+        for fdict in files:
+            fn = fdict["file"]
+            fs = fdict["source"]
+            assert fs.startswith("http"), "only http schemes supported right now"
+            err = err or download(fs, fn)
+        return err
+
+    def _depend_req(self):
+        err = False
+        dep = self._test_cfg.get("depend", {})
+        req = dep.get("requirements", [])
+        if not req:
+            return err
+        fname = ".yea-requirements.txt"
+        with open(fname, "w") as f:
+            f.writelines(f"{item}\n" for item in req)
+
+        cmd_list = ["pip", "install", "-qq", "-r", fname]
+        exit_code = run_command(cmd_list)
+        err = err or exit_code != 0
+        return err
+
+    def _depend(self):
+        tname = self._tname
+        print("INFO: DEPEND=", tname)
+        tpath = pathlib.Path(tname)
+        os.chdir(tpath.parent)
+        err = False
+        err = err or self._depend_files()
+        err = err or self._depend_req()
+        return err
+
     def _run(self):
         tname = self._tname
         print("INFO: RUN=", tname)
@@ -39,29 +111,20 @@ class YeaTest:
         if self._covrc:
             cmd_list.extend(["--rcfile", str(self._covrc)])
         cmd_list.extend([cmd])
-        args = self._test_cfg.get("command-args", [])
+        cmd_cfg = self._test_cfg.get("command", {})
+        args = cmd_cfg.get("args", [])
+        timeout = cmd_cfg.get("timeout")
         cmd_list.extend(args)
-        print("INFO: RUNNING=", cmd_list)
         env = os.environ.copy()
         elist = self._test_cfg.get("env", [])
         for edict in elist:
             env.update(edict)
         if self._permute_groups and self._permute_items:
-            env["YEA_PERMUTE_GRP"] = ",".join(self._permute_groups)
-            env["YEA_PERMUTE_VAL"] = ",".join(self._permute_items)
-        p = subprocess.Popen(cmd_list, env=env)
-        try:
-            p.communicate(timeout=120)
-        except subprocess.TimeoutExpired:
-            print("TIMEOUT")
-            p.kill()
-            try:
-                p.communicate(timeout=30)
-            except subprocess.TimeoutExpired:
-                print("ERROR: double timeout")
-                sys.exit(1)
-        # print("DONE:", p.returncode)
-        self._retcode = p.returncode
+            env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
+            env["YEA_PARAM_VALUES"] = ",".join(self._permute_items)
+
+        exit_code = run_command(cmd_list, env=env, timeout=timeout)
+        self._retcode = exit_code
 
     def _load(self):
         spec = None
@@ -134,6 +197,9 @@ class YeaTest:
     def run(self):
         self._prep()
         if not self._args.dryrun:
+            err = self._depend()
+            # TODO: record error insted of assert
+            assert not err, "Problem getting test dependencies"
             self._time_start = time.time()
             self._run()
             self._time_end = time.time()
@@ -141,10 +207,10 @@ class YeaTest:
 
     def get_permutations(self):
         self._load()
-        perm = self._test_cfg.get("permute")
-        if not perm:
+        params = self._test_cfg.get("parametrize")
+        if not params:
             return [self]
-        groups = perm.get("group", [])
+        groups = params.get("permute", [])
         gnames = []
         glist = []
         for g in groups:

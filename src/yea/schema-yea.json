@@ -1,0 +1,105 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://dev.wandb.com/schema/testlib-config.json",
+    "title": "TestlibConfig",
+    "description": "Weights & Biases Testlib Configuration.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Test identification"
+        },
+        "name": {
+            "type": "string",
+            "description": "Test name"
+        },
+        "tag": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "suite": {
+                    "type": "string"
+                }
+            }
+        },
+        "plugin": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "assert": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        "var": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        "env": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        "command": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "timeout": {
+                    "type": "integer"
+                },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "parametrize": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "permute": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            }
+        },
+        "depend": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "file": {
+                               "type": "string"
+			    },
+                            "source": {
+                               "type": "string"
+			    }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
