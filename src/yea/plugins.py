@@ -73,7 +73,7 @@ class Plugins:
                 continue
             if p.name not in test_config.get("plugin", []):
                 continue
-            result = p.test_check(yt)
+            result = p.test_check(yt, debug=self._yc._args.debug)
             if result:
                 result_list.extend(result)
         return result_list

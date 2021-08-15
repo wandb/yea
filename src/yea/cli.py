@@ -29,6 +29,7 @@ def cli():
     subparsers = parser.add_subparsers(dest="action", title="action", description="Action to perform")
     parser.add_argument("--dryrun", action="store_true", help="Dont do anything")
     parser.add_argument("--live", action="store_true", help="Run against real server")
+    parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
     parse_list.set_defaults(func=cli_list)
