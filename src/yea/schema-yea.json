@@ -54,6 +54,10 @@
                 "timeout": {
                     "type": "integer"
                 },
+                "program": {
+                    "type": "string",
+                    "description": "Program name"
+                },
                 "args": {
                     "type": "array",
                     "items": {
@@ -92,10 +96,10 @@
                         "properties": {
                             "file": {
                                "type": "string"
-			    },
+                            },
                             "source": {
                                "type": "string"
-			    }
+                            }
                         }
                     }
                 }

@@ -85,12 +85,28 @@ class TestRunner:
                 tpaths.append(tpath)
             for tpath in path_dir.glob("*.yea"):
                 # TODO: parse yea file looking for path info
-                py_fname = str(tpath)[:-4] + ".py"
-                if not all_tests and py_fname not in args_tests:
-                    logger.debug("skip yea fname {}".format(tpath))
+                spec = testspec.load_yaml_from_file(tpath)
+
+                # if program is specied, keep track of yea file
+                py_fname = spec.get("command", {}).get("program")
+                if py_fname:
+                    # hydrate to full path, take base from tpath
+                    py_fname = os.path.join(tpath.parent, py_fname)
+                    t_fname = tpath
+                else:
+                    py_fname = str(tpath)[:-4] + ".py"
+                    t_fname = py_fname
+
+                if not os.path.exists(py_fname):
                     continue
-                py_path = pathlib.Path(py_fname)
-                tpaths.append(py_path)
+
+                if not all_tests:
+                    if py_fname not in args_tests and str(tpath) not in args_tests:
+                        logger.debug("skip yea fname {}".format(tpath))
+                        continue
+
+                # add .yea or .py file
+                tpaths.append(pathlib.Path(t_fname))
 
         tlist = []
         for tname in tpaths:

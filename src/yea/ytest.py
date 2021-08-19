@@ -102,10 +102,10 @@ class YeaTest:
     def _run(self):
         tname = self._tname
         print("INFO: RUN=", tname)
-        cmd = "./{}".format(tname)
+        program = self._test_cfg.get("command", {}).get("program")
         tpath = pathlib.Path(tname)
         os.chdir(tpath.parent)
-        cmd = "./{}".format(tpath.name)
+        cmd = "./{}".format(program or tpath.name)
         # cmd_list = [cmd]
         cmd_list = ["coverage", "run"]
         if self._covrc:
