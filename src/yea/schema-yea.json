@@ -20,6 +20,12 @@
             "properties": {
                 "suite": {
                     "type": "string"
+                },
+                "shard": {
+                    "type": "string"
+                },
+                "skip": {
+                    "type": "boolean"
                 }
             }
         },
@@ -83,6 +89,18 @@
             "additionalProperties": false,
             "properties": {
                 "requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pip_install_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "uninstall": {
                     "type": "array",
                     "items": {
                         "type": "string"
