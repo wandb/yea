@@ -30,6 +30,8 @@ def cli():
     parser.add_argument("--dryrun", action="store_true", help="Dont do anything")
     parser.add_argument("--live", action="store_true", help="Run against real server")
     parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
+    parser.add_argument("--shard", help="Specify testing shard")
+    parser.add_argument("--suite", help="Specify testing suite")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
     parse_list.set_defaults(func=cli_list)

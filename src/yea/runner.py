@@ -82,6 +82,17 @@ class TestRunner:
                 if not spec:
                     logger.debug("skip nospec {}".format(tpath))
                     continue
+
+                if all_tests:
+                    if spec.get("tag", {}).get("skip", False):
+                        continue
+                    suite = spec.get("tag", {}).get("suite", "main")
+                    shard = spec.get("tag", {}).get("shard", "default")
+                    if self._args.suite and self._args.suite != suite:
+                        continue
+                    if self._args.shard and self._args.shard != shard:
+                        continue
+
                 tpaths.append(tpath)
             for tpath in path_dir.glob("*.yea"):
                 # TODO: parse yea file looking for path info
@@ -99,6 +110,17 @@ class TestRunner:
 
                 if not os.path.exists(py_fname):
                     continue
+
+                # TODO: DRY. code is same as above, refactor sometime
+                if all_tests:
+                    if spec.get("tag", {}).get("skip", False):
+                        continue
+                    suite = spec.get("tag", {}).get("suite", "main")
+                    shard = spec.get("tag", {}).get("shard", "default")
+                    if self._args.suite and self._args.suite != suite:
+                        continue
+                    if self._args.shard and self._args.shard != shard:
+                        continue
 
                 if not all_tests:
                     if py_fname not in args_tests and str(tpath) not in args_tests:
