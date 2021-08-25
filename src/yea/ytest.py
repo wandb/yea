@@ -74,18 +74,37 @@ class YeaTest:
             err = err or download(fs, fn)
         return err
 
-    def _depend_req(self):
+    def _depend_install(self):
         err = False
-        dep = self._test_cfg.get("depend", {})
-        req = dep.get("requirements", [])
+        req = self._test_cfg.get("depend", {}).get("requirements", [])
+        options = self._test_cfg.get("depend", {}).get("pip_install_options", [])
+        if not (req or options):
+            return err
+        if req:
+            fname = ".yea-requirements.txt"
+            with open(fname, "w") as f:
+                f.writelines(f"{item}\n" for item in req)
+            options += ["-r", fname]
+        cmd_list = ["pip", "install", "-qq"]
+        cmd_list.extend(options)
+        exit_code = run_command(cmd_list)
+        if req and os.path.exists(fname):
+            os.remove(fname)
+        err = err or exit_code != 0
+        return err
+
+    def _depend_uninstall(self):
+        err = False
+        req = self._test_cfg.get("depend", {}).get("uninstall", [])
         if not req:
             return err
-        fname = ".yea-requirements.txt"
+        fname = ".yea-uninstall.txt"
         with open(fname, "w") as f:
             f.writelines(f"{item}\n" for item in req)
-
-        cmd_list = ["pip", "install", "-qq", "-r", fname]
+        cmd_list = ["pip", "uninstall", "-qq", "-y", "-r", fname]
         exit_code = run_command(cmd_list)
+        if os.path.exists(fname):
+            os.remove(fname)
         err = err or exit_code != 0
         return err
 
@@ -95,8 +114,10 @@ class YeaTest:
         tpath = pathlib.Path(tname)
         os.chdir(tpath.parent)
         err = False
+        err = err or self._depend_uninstall()
         err = err or self._depend_files()
-        err = err or self._depend_req()
+        err = err or self._depend_install()
+
         return err
 
     def _run(self):
