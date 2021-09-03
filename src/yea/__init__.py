@@ -1,4 +1,4 @@
-from .setup import setup
+from ._setup import setup
 
 
 __all__ = ["setup"]

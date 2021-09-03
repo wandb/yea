@@ -2,6 +2,7 @@
 
 import configparser
 import itertools
+import json
 import os
 import pathlib
 import subprocess
@@ -144,6 +145,23 @@ class YeaTest:
             env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
             env["YEA_PARAM_VALUES"] = ",".join(self._permute_items)
 
+        plugins = self._test_cfg.get("plugin", [])
+        if plugins:
+            for p in plugins:
+                penv = p.upper()
+                pnames = []
+                pvalues = []
+                for items in self._test_cfg.get("var", []):
+                    for k, v in items.items():
+                        prefix = f":{p}:"
+                        if k.startswith(prefix):
+                            pnames.append(k[len(prefix) :])
+                            pvalues.append(v)
+                if pnames and pvalues:
+                    env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
+                    env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
+            env["YEA_PLUGINS"] = ",".join(plugins)
+
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
@@ -249,9 +267,10 @@ class YeaTest:
             t._load()
             t._permute_groups = gnames
             t._permute_items = it
+            tpname = "{}-{}".format(tnum, "-".join(it))
             tid = t._test_cfg.get("id")
             if tid:
-                t._test_cfg["id"] = "{}.{}".format(tid, tnum)
+                t._test_cfg["id"] = "{}.{}".format(tid, tpname)
             r.append(t)
         return r
 
