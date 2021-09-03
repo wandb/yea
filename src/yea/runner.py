@@ -56,6 +56,8 @@ class TestRunner:
                 # use .gitignore instead
                 if "wandb" in dirs:
                     dirs.remove("wandb")
+                if ".tox" in dirs:
+                    dirs.remove(".tox")
                 for d in dirs:
                     path_dir = pathlib.Path(self._cfg.test_root, root, d)
                     yield path_dir

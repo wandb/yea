@@ -27,7 +27,7 @@ def find_yaml_str(s):
     # Cut YAML from rest of docstring
     for index, line in enumerate(split_lines):
         line = line.strip()
-        if line.startswith("---"):
+        if line == "---" or line.startswith("--- "):
             # TODO: validate, capture type
             # !<tag:wandb.ai,2021:yea>
             cut_from = index + 1
@@ -44,7 +44,12 @@ def load_yaml_from_docstring(docstring):
 
 
 def load_yaml_from_str(yaml_string):
-    return yaml.load(yaml_string, Loader=yaml.SafeLoader)
+    try:
+        data = yaml.load(yaml_string, Loader=yaml.SafeLoader)
+    except yaml.scanner.ScannerError:
+        print("WARNING: Unable to parse yaml")
+        data = {}
+    return data
 
 
 def load_yaml_from_file(filepath):
