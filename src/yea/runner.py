@@ -33,6 +33,9 @@ class TestRunner:
         self._test_list = []
         self._populate()
 
+    def clean(self):
+        pass
+
     def _get_args_list(self):
         # TODO: clean up args parsing
         args_tests = getattr(self._args, "tests", None)
@@ -46,9 +49,9 @@ class TestRunner:
             alist.append(str(p))
         return alist
 
-    def _get_dirs(self):
+    def _get_dirs(self, from_cwd=False):
         # generate to return all test dirs and rcursively found dirs
-        for tdir in self._cfg.test_dirs:
+        for tdir in self._cfg.test_dirs if not from_cwd else ["."]:
             path_dir = pathlib.Path(self._cfg.test_root, tdir)
             yield path_dir
             for root, dirs, _ in os.walk(path_dir, topdown=True):
