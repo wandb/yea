@@ -57,7 +57,7 @@ class TestRunner:
             for root, dirs, _ in os.walk(path_dir, topdown=True):
                 # TODO: temporary hack to avoid walking into wandb dir
                 # use .gitignore instead
-                if "wandb" in dirs:
+                if "wandb" in dirs and not from_cwd:
                     dirs.remove("wandb")
                 if ".tox" in dirs:
                     dirs.remove(".tox")

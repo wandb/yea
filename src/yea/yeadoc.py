@@ -7,7 +7,6 @@ import pathlib
 from typing import Dict, List, Optional
 from yea.runner import TestRunner, alphanum_sort
 from yea import testspec, ytest
-import tempfile
 import shutil
 
 logger = logging.getLogger(__name__)
@@ -103,7 +102,7 @@ class DocTestRunner(TestRunner):
 
         id_test_map: Dict[str, YeadocSnippet] = {}
 
-        for path_dir in self._get_dirs():
+        for path_dir in self._get_dirs(from_cwd=True):
             # build up the list of tests that can be run by parsing docstrings
             for tpath in path_dir.glob("*.py"):
 
@@ -117,6 +116,15 @@ class DocTestRunner(TestRunner):
                     snippets = load_tests_from_docstring(docstr)
                     for s in snippets:
                         id_test_map[s.id] = s
+
+                classes = [node for node in mod.body if isinstance(node, ast.ClassDef)]
+                for class_ in classes:
+                    methods = [node for node in class_.body if isinstance(node, ast.FunctionDef)]
+                    for func in methods:
+                        docstr = ast.get_docstring(func)
+                        snippets = load_tests_from_docstring(docstr)
+                        for s in snippets:
+                            id_test_map[s.id] = s
 
         for path_dir in self._get_dirs():
             for tpath in path_dir.glob("*.yea"):
@@ -147,7 +155,7 @@ class DocTestRunner(TestRunner):
                     f.write(id_test_map[spec["id"]].code)
 
                 # add .yea or .py file
-                tpaths.append(pathlib.Path(t_fname))
+                tpaths.append(pathlib.Path(py_fname))
 
         tlist = []
         for tname in tpaths:
