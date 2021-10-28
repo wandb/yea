@@ -1,13 +1,8 @@
-import ast
 import io
-import re
 import logging
+import re
 from dataclasses import dataclass
-import pathlib
-from typing import Dict, List, Optional
-from yea.runner import TestRunner, alphanum_sort
-from yea import testspec, ytest
-import shutil
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +15,8 @@ class YeadocSnippet:
     syntax: Optional[str] = None
 
 
-def extract_from_buffer(f, max_num_lines: int = 10000) -> List[YeadocSnippet]:
-    out = []
+def extract_from_buffer(f: io.TextIOBase, max_num_lines: int = 10000) -> List[YeadocSnippet]:
+    out: List[YeadocSnippet] = []
     previous_nonempty_line = None
     k = 1
 
@@ -61,7 +56,7 @@ def extract_from_buffer(f, max_num_lines: int = 10000) -> List[YeadocSnippet]:
                 continue
 
             # check for keywords
-            m = re.match(
+            m = re.match(  # type: ignore
                 r"<!--[-\s]*yeadoc-test:(.*)-->",
                 previous_nonempty_line.strip(),
             )
@@ -79,97 +74,3 @@ def extract_from_buffer(f, max_num_lines: int = 10000) -> List[YeadocSnippet]:
 
 def load_tests_from_docstring(docstring: str) -> List[YeadocSnippet]:
     return extract_from_buffer(io.StringIO(docstring))
-
-
-class DocTestRunner(TestRunner):
-    def __init__(self, *, yc):
-        self._tmpdir = pathlib.Path.cwd() / ".yeadoc"
-        if self._tmpdir.exists():
-            shutil.rmtree(self._tmpdir)
-        self._tmpdir.mkdir()
-        super().__init__(yc=yc)
-
-    def _populate(self):
-        tpaths = []
-
-        args_tests = self._get_args_list() or []
-
-        all_tests = False
-        if self._args.action == "list" and not self._args.tests:
-            all_tests = True
-        if self._args.action == "run" and self._args.all:
-            all_tests = True
-
-        id_test_map: Dict[str, YeadocSnippet] = {}
-
-        for path_dir in self._get_dirs(from_cwd=True):
-            # build up the list of tests that can be run by parsing docstrings
-            for tpath in path_dir.glob("*.py"):
-
-                # parse the test file using ast
-                with open(tpath) as f:
-                    mod = ast.parse(f.read())
-
-                function_definitions = [node for node in mod.body if isinstance(node, ast.FunctionDef)]
-                for func in function_definitions:
-                    docstr = ast.get_docstring(func)
-                    snippets = load_tests_from_docstring(docstr)
-                    for s in snippets:
-                        id_test_map[s.id] = s
-
-                classes = [node for node in mod.body if isinstance(node, ast.ClassDef)]
-                for class_ in classes:
-                    methods = [node for node in class_.body if isinstance(node, ast.FunctionDef)]
-                    for func in methods:
-                        docstr = ast.get_docstring(func)
-                        snippets = load_tests_from_docstring(docstr)
-                        for s in snippets:
-                            id_test_map[s.id] = s
-
-        for path_dir in self._get_dirs():
-            for tpath in path_dir.glob("*.yea"):
-                # TODO: parse yea file looking for path info
-                spec = testspec.load_yaml_from_file(tpath)
-                id_not_in_map = spec.get("id", None) not in id_test_map
-                test_selected_to_run = all_tests or spec.get("id", None) in args_tests
-
-                if id_not_in_map or not test_selected_to_run:
-                    logger.debug("skip yea fname: {}".format(tpath))
-                    continue
-
-                if all_tests:
-                    if spec.get("tag", {}).get("skip", False):
-                        continue
-                    suite = spec.get("tag", {}).get("suite", "main")
-                    shard = spec.get("tag", {}).get("shard", "default")
-                    if self._args.suite and self._args.suite != suite:
-                        continue
-                    if self._args.shard and self._args.shard != shard:
-                        continue
-
-                # write test and spec to tempfiles
-                shutil.copy(tpath, self._tmpdir)
-                t_fname = self._tmpdir / tpath.name
-                py_fname = str(t_fname)[:-4] + ".py"
-                with open(py_fname, "w") as f:
-                    f.write(id_test_map[spec["id"]].code)
-
-                # add .yea or .py file
-                tpaths.append(pathlib.Path(py_fname))
-
-        tlist = []
-        for tname in tpaths:
-            t = ytest.YeaTest(tname=tname, yc=self._yc)
-            test_perms = t.get_permutations()
-            tlist.extend(test_perms)
-
-        tlist.sort(key=alphanum_sort)
-        self._test_list = tlist
-
-    def clean(self):
-        if self._tmpdir.exists():
-            shutil.rmtree(self._tmpdir)
-
-    def finish(self):
-        self.clean()
-        super().finish()

@@ -3,14 +3,13 @@
 import argparse
 import sys
 
-from yea import context, runner, yeadoc
+from yea import context, runner
 
 
 def cli_list(yc):
     print("Tests:")
     yc._args.action = "list"
-    trc = yeadoc.DocTestRunner if yc._args.doc else runner.TestRunner
-    tr = trc(yc=yc)
+    tr = runner.TestRunner(yc=yc)
     tests = tr.get_tests()
     test_ids = [len(t.test_id) for t in tests]
     tlen = max(test_ids) if test_ids else 0
@@ -21,8 +20,7 @@ def cli_list(yc):
 
 def cli_run(yc):
     yc._args.action = "run"
-    trc = yeadoc.DocTestRunner if yc._args.doc else runner.TestRunner
-    tr = trc(yc=yc)
+    tr = runner.TestRunner(yc=yc)
     tr.run()
 
 
@@ -35,7 +33,7 @@ def cli():
     parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
-    parser.add_argument("--doc", help="Read tests from docstrings", action="store_true")
+    parser.add_argument("--docs-only", help="Read tests from docstrings only.", action="store_true")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
     parse_list.set_defaults(func=cli_list)
