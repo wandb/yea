@@ -62,15 +62,15 @@ class TestRunner:
             alist.append(str(p))
         return alist
 
-    def _get_dirs(self, from_cwd=False):
+    def _get_dirs(self):
         # generate to return all test dirs and rcursively found dirs
-        for tdir in self._cfg.test_dirs if not from_cwd else ["."]:
+        for tdir in self._cfg.test_dirs:
             path_dir = pathlib.Path(self._cfg.test_root, tdir)
             yield path_dir
             for root, dirs, _ in os.walk(path_dir, topdown=True):
                 # TODO: temporary hack to avoid walking into wandb dir
                 # use .gitignore instead
-                if "wandb" in dirs and not from_cwd:
+                if "wandb" in dirs:
                     dirs.remove("wandb")
                 if ".tox" in dirs:
                     dirs.remove(".tox")
