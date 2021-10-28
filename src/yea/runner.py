@@ -180,7 +180,7 @@ class TestRunner:
                 # TODO: parse yea file looking for path info
                 spec = testspec.load_yaml_from_file(tpath)
                 id_not_in_map = spec.get("id", None) not in id_test_map
-                test_selected_to_run = all_tests or spec.get("id", None) in args_tests
+                test_selected_to_run = all_tests or str(tpath) in args_tests
 
                 if id_not_in_map or not test_selected_to_run:
                     logger.debug("skip yea fname: {}".format(tpath))
