@@ -174,6 +174,10 @@ class TestRunner:
                         snippets = load_tests_from_docstring(docstr)
                         for s in snippets:
                             id_test_map[s.id] = s
+                    class_docstr = ast.get_docstring(class_)
+                    snippets = load_tests_from_docstring(class_docstr)
+                    for s in snippets:
+                        id_test_map[s.id] = s
 
         for path_dir in self._get_dirs():
             for tpath in path_dir.glob("*.yea"):
