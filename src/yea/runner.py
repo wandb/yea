@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 """test runner."""
-
+import ast
 import logging
 import os
 import pathlib
 import re
+import shutil
 import sys
+from typing import Dict
 
 import junit_xml
 
 from yea import testspec, ytest
+
+from .yeadoc import YeadocSnippet, load_tests_from_docstring
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +29,7 @@ def alphanum_sort(key):
 
 class TestRunner:
     def __init__(self, *, yc):
+        self.prepare()
         self._yc = yc
         self._cfg = yc._cfg
         self._args = yc._args
@@ -32,6 +37,17 @@ class TestRunner:
         self._results = []
         self._test_list = []
         self._populate()
+
+    def prepare(self):
+        # initialize
+        self._tmpdir = pathlib.Path.cwd() / ".yeadoc"
+        if self._tmpdir.exists():
+            shutil.rmtree(self._tmpdir)
+        self._tmpdir.mkdir()
+
+    def clean(self):
+        if self._tmpdir.exists():
+            shutil.rmtree(self._tmpdir)
 
     def _get_args_list(self):
         # TODO: clean up args parsing
@@ -73,47 +89,107 @@ class TestRunner:
         if self._args.action == "run" and self._args.all:
             all_tests = True
 
+        if not self._args.docs_only:
+            for path_dir in self._get_dirs():
+                # TODO: look for .yea, or look for .py with docstring
+                for tpath in path_dir.glob("*.py"):
+                    if not all_tests and str(tpath) not in args_tests:
+                        logger.debug("skip fname {}".format(tpath))
+                        continue
+                    docstr = testspec.load_docstring(tpath)
+                    spec = testspec.load_yaml_from_docstring(docstr)
+                    if not spec:
+                        logger.debug("skip nospec {}".format(tpath))
+                        continue
+
+                    if all_tests:
+                        if spec.get("tag", {}).get("skip", False):
+                            continue
+                        suite = spec.get("tag", {}).get("suite", "main")
+                        shard = spec.get("tag", {}).get("shard", "default")
+                        if self._args.suite and self._args.suite != suite:
+                            continue
+                        if self._args.shard and self._args.shard != shard:
+                            continue
+
+                    tpaths.append(tpath)
+                for tpath in path_dir.glob("*.yea"):
+                    # TODO: parse yea file looking for path info
+                    spec = testspec.load_yaml_from_file(tpath)
+
+                    # if program is specied, keep track of yea file
+                    py_fname = spec.get("command", {}).get("program")
+                    if py_fname:
+                        # hydrate to full path, take base from tpath
+                        py_fname = os.path.join(tpath.parent, py_fname)
+                        t_fname = tpath
+                    else:
+                        py_fname = str(tpath)[:-4] + ".py"
+                        t_fname = py_fname
+
+                    if not os.path.exists(py_fname):
+                        continue
+
+                    # TODO: DRY. code is same as above, refactor sometime
+                    if all_tests:
+                        if spec.get("tag", {}).get("skip", False):
+                            continue
+                        suite = spec.get("tag", {}).get("suite", "main")
+                        shard = spec.get("tag", {}).get("shard", "default")
+                        if self._args.suite and self._args.suite != suite:
+                            continue
+                        if self._args.shard and self._args.shard != shard:
+                            continue
+
+                    if not all_tests:
+                        if py_fname not in args_tests and str(tpath) not in args_tests:
+                            logger.debug("skip yea fname {}".format(tpath))
+                            continue
+
+                    # add .yea or .py file
+                    tpaths.append(pathlib.Path(t_fname))
+
+        # pick up yea tests from docstrings
+        id_test_map: Dict[str, YeadocSnippet] = {}
         for path_dir in self._get_dirs():
-            # TODO: look for .yea, or look for .py with docstring
+            # build up the list of tests that can be run by parsing docstrings
             for tpath in path_dir.glob("*.py"):
-                if not all_tests and str(tpath) not in args_tests:
-                    logger.debug("skip fname {}".format(tpath))
-                    continue
-                docstr = testspec.load_docstring(tpath)
-                spec = testspec.load_yaml_from_docstring(docstr)
-                if not spec:
-                    logger.debug("skip nospec {}".format(tpath))
-                    continue
 
-                if all_tests:
-                    if spec.get("tag", {}).get("skip", False):
-                        continue
-                    suite = spec.get("tag", {}).get("suite", "main")
-                    shard = spec.get("tag", {}).get("shard", "default")
-                    if self._args.suite and self._args.suite != suite:
-                        continue
-                    if self._args.shard and self._args.shard != shard:
-                        continue
+                # parse the test file using ast
+                with open(tpath) as f:
+                    mod = ast.parse(f.read())
 
-                tpaths.append(tpath)
+                function_definitions = [node for node in mod.body if isinstance(node, ast.FunctionDef)]
+                for func in function_definitions:
+                    docstr = ast.get_docstring(func)
+                    snippets = load_tests_from_docstring(docstr)
+                    for s in snippets:
+                        id_test_map[s.id] = s
+
+                classes = [node for node in mod.body if isinstance(node, ast.ClassDef)]
+                for class_ in classes:
+                    methods = [node for node in class_.body if isinstance(node, ast.FunctionDef)]
+                    for func in methods:
+                        docstr = ast.get_docstring(func)
+                        snippets = load_tests_from_docstring(docstr)
+                        for s in snippets:
+                            id_test_map[s.id] = s
+                    class_docstr = ast.get_docstring(class_)
+                    snippets = load_tests_from_docstring(class_docstr)
+                    for s in snippets:
+                        id_test_map[s.id] = s
+
+        for path_dir in self._get_dirs():
             for tpath in path_dir.glob("*.yea"):
                 # TODO: parse yea file looking for path info
                 spec = testspec.load_yaml_from_file(tpath)
+                id_not_in_map = spec.get("id", None) not in id_test_map
+                test_selected_to_run = all_tests or str(tpath) in args_tests
 
-                # if program is specied, keep track of yea file
-                py_fname = spec.get("command", {}).get("program")
-                if py_fname:
-                    # hydrate to full path, take base from tpath
-                    py_fname = os.path.join(tpath.parent, py_fname)
-                    t_fname = tpath
-                else:
-                    py_fname = str(tpath)[:-4] + ".py"
-                    t_fname = py_fname
-
-                if not os.path.exists(py_fname):
+                if id_not_in_map or not test_selected_to_run:
+                    logger.debug("skip yea fname: {}".format(tpath))
                     continue
 
-                # TODO: DRY. code is same as above, refactor sometime
                 if all_tests:
                     if spec.get("tag", {}).get("skip", False):
                         continue
@@ -124,13 +200,15 @@ class TestRunner:
                     if self._args.shard and self._args.shard != shard:
                         continue
 
-                if not all_tests:
-                    if py_fname not in args_tests and str(tpath) not in args_tests:
-                        logger.debug("skip yea fname {}".format(tpath))
-                        continue
+                # write test and spec to tempfiles
+                shutil.copy(tpath, self._tmpdir)
+                t_fname = self._tmpdir / tpath.name
+                py_fname = str(t_fname)[:-4] + ".py"
+                with open(py_fname, "w") as f:
+                    f.write(id_test_map[spec["id"]].code)
 
                 # add .yea or .py file
-                tpaths.append(pathlib.Path(t_fname))
+                tpaths.append(pathlib.Path(py_fname))
 
         tlist = []
         for tname in tpaths:
@@ -198,6 +276,7 @@ class TestRunner:
             junit_xml.TestSuite.to_file(f, [ts], prettyprint=False, encoding="utf-8")
 
     def finish(self):
+        self.clean()
         self._save_results()
         exit = 0
         print("\nResults:")

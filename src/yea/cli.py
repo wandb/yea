@@ -15,6 +15,7 @@ def cli_list(yc):
     tlen = max(test_ids) if test_ids else 0
     for t in tests:
         print("  {:<{}s}: {}".format(t.test_id, tlen, t.name))
+    tr.clean()
 
 
 def cli_run(yc):
@@ -32,6 +33,7 @@ def cli():
     parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
+    parser.add_argument("--docs-only", help="Read tests from docstrings only.", action="store_true")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
     parse_list.set_defaults(func=cli_list)
