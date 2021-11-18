@@ -87,7 +87,7 @@ class YeaTest:
             with open(fname, "w") as f:
                 f.writelines(f"{item}\n" for item in req)
             options += ["-r", fname]
-        cmd_list = ["pip", "install", "-qq"]
+        cmd_list = ["python", "-m", "pip", "install", "-qq"]
         cmd_list.extend(options)
         exit_code = run_command(cmd_list, timeout=timeout)
         if req and os.path.exists(fname):
@@ -104,7 +104,7 @@ class YeaTest:
         fname = ".yea-uninstall.txt"
         with open(fname, "w") as f:
             f.writelines(f"{item}\n" for item in req)
-        cmd_list = ["pip", "uninstall", "-qq", "-y", "-r", fname]
+        cmd_list = ["python", "-m", "pip", "uninstall", "-qq", "-y", "-r", fname]
         exit_code = run_command(cmd_list, timeout=timeout)
         if os.path.exists(fname):
             os.remove(fname)
