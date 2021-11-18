@@ -94,6 +94,12 @@
                         "type": "string"
                     }
                 },
+                "pip_install_timeout": {
+                    "type": "integer"
+		},
+                "pip_uninstall_timeout": {
+                    "type": "integer"
+		},
                 "pip_install_options": {
                     "type": "array",
                     "items": {
