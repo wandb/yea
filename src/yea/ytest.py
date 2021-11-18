@@ -79,6 +79,7 @@ class YeaTest:
         err = False
         req = self._test_cfg.get("depend", {}).get("requirements", [])
         options = self._test_cfg.get("depend", {}).get("pip_install_options", [])
+        timeout = self._test_cfg.get("depend", {}).get("pip_install_timeout")
         if not (req or options):
             return err
         if req:
@@ -88,7 +89,7 @@ class YeaTest:
             options += ["-r", fname]
         cmd_list = ["pip", "install", "-qq"]
         cmd_list.extend(options)
-        exit_code = run_command(cmd_list)
+        exit_code = run_command(cmd_list, timeout=timeout)
         if req and os.path.exists(fname):
             os.remove(fname)
         err = err or exit_code != 0
@@ -97,13 +98,14 @@ class YeaTest:
     def _depend_uninstall(self):
         err = False
         req = self._test_cfg.get("depend", {}).get("uninstall", [])
+        timeout = self._test_cfg.get("depend", {}).get("pip_uninstall_timeout")
         if not req:
             return err
         fname = ".yea-uninstall.txt"
         with open(fname, "w") as f:
             f.writelines(f"{item}\n" for item in req)
         cmd_list = ["pip", "uninstall", "-qq", "-y", "-r", fname]
-        exit_code = run_command(cmd_list)
+        exit_code = run_command(cmd_list, timeout=timeout)
         if os.path.exists(fname):
             os.remove(fname)
         err = err or exit_code != 0
