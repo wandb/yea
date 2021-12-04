@@ -272,6 +272,9 @@ class TestRunner:
             return
         p = self._yc._cfg._cfroot.joinpath(res_fname)
         ts = junit_xml.TestSuite("yea-func", self._results)
+        # create testfile dir if it doesnt exist
+        testdir = p.parent  # get the directory portion of path
+        testdir.mkdir(parents=True, exist_ok=True)
         with open(p, "w") as f:
             junit_xml.TestSuite.to_file(f, [ts], prettyprint=False, encoding="utf-8")
 
