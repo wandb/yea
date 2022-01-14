@@ -145,7 +145,7 @@ class YeaTest:
             env.update(edict)
         if self._permute_groups and self._permute_items:
             env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
-            env["YEA_PARAM_VALUES"] = ",".join(self._permute_items)
+            env["YEA_PARAM_VALUES"] = ",".join(map(str, self._permute_items))
 
         plugins = self._test_cfg.get("plugin", [])
         if plugins:
@@ -239,7 +239,7 @@ class YeaTest:
         self._prep()
         if not self._args.dryrun:
             err = self._depend()
-            # TODO: record error insted of assert
+            # TODO: record error instead of assert
             assert not err, "Problem getting test dependencies"
             self._time_start = time.time()
             self._run()
@@ -269,10 +269,10 @@ class YeaTest:
             t._load()
             t._permute_groups = gnames
             t._permute_items = it
-            tpname = "{}-{}".format(tnum, "-".join(it))
+            tpname = f"{tnum}-{'-'.join(map(str, it))}"
             tid = t._test_cfg.get("id")
             if tid:
-                t._test_cfg["id"] = "{}.{}".format(tid, tpname)
+                t._test_cfg["id"] = f"{tid}.{tpname}"
             r.append(t)
         return r
 
