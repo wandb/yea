@@ -1,6 +1,7 @@
 """Yea test class."""
 
 import configparser
+from functools import reduce
 import itertools
 import json
 import os
@@ -8,6 +9,7 @@ import pathlib
 import subprocess
 import sys
 import time
+from typing import Any, Dict
 
 import requests
 
@@ -46,6 +48,64 @@ def download(url, fname):
         print("ERROR: url download error", url, e)
         err = True
     return err
+
+
+def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
+    """
+    Recursively parse a "flat" config with column-separated key name definitions
+    into a nested dictionary given a prefix.
+
+    Example:
+        config = {
+            ":rug:ties_room_together": True,
+            ":wandb:mock_server:lol": True,
+            ":wandb:mock_server:lmao": False,
+            ":wandb:mock_server:resistance:object": "Borg",
+            ":wandb:mock_server:resistance:futile": True,
+            ":wandb:foo": "bar",
+        }
+        prefix = ":wandb:"
+        get_config(config, prefix)
+        # {
+        #     "mock_server": {
+        #         "lol": True,
+        #         "lmao": False,
+        #         "resistance": {
+        #             "object": "Borg",
+        #             "futile": True,
+        #         },
+        #     },
+        #     "foo": "bar",
+        # }
+
+    """
+    # recursively get config values
+    def parse(key: str, value: Any):
+        if ":" not in key:
+            return {key: value}
+        else:
+            key, subkey = key.split(":", 1)
+            return {key: parse(subkey, value)}
+
+    # recursively merge configs
+    def merge(source: Dict[str, Any], destination: Dict[str, Any]):
+        for key, value in source.items():
+            if isinstance(value, dict):
+                # get node or create one
+                node = destination.setdefault(key, {})
+                merge(value, node)
+            else:
+                destination[key] = value
+        return destination
+
+    prefixed_items = {
+        k[len(prefix):]: v for (k, v) in config.items() if k.startswith(prefix)
+    }
+    parsed_items = []
+    for k, v in prefixed_items.items():
+        parsed_items.append(parse(k, v))
+
+    return reduce(merge, parsed_items) if parsed_items else {}
 
 
 class YeaTest:
@@ -147,23 +207,52 @@ class YeaTest:
             env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
             env["YEA_PARAM_VALUES"] = ",".join(map(str, self._permute_items))
 
+        print("++++++++++++++++++")
+        print(self._yc._plugs._plugin_list[0]._name)
+        print("++++++++++++++++++")
+        input()
         plugins = self._test_cfg.get("plugin", [])
+        print(plugins)
+        if self._permute_groups and self._permute_items:
+            params = {k: v for (k, v) in zip(self._permute_groups, self._permute_items)}
+        else:
+            params = None
+        print(params)
+        print()
+        input()
         if plugins:
-            for p in plugins:
-                penv = p.upper()
+            for plugin_name in plugins:
+                prefix = f":{plugin_name}:"
+
+                if params is not None:
+                    # need to configure the plugin?
+                    # get the plugin by its name
+                    plug = self._yc._plugs.get_plugin(plugin_name)
+                    print(plug)
+                    plugin_params = get_config(params, prefix)
+                    print(plugin_params)
+                    if plugin_params:
+                        plug.monitors_configure(plugin_params)
+                    input()
+
+                # process vars
+                penv = plugin_name.upper()
                 pnames = []
                 pvalues = []
                 for items in self._test_cfg.get("var", []):
                     for k, v in items.items():
-                        prefix = f":{p}:"
                         if k.startswith(prefix):
-                            pnames.append(k[len(prefix) :])
+                            pnames.append(k[len(prefix):])
                             pvalues.append(v)
                 if pnames and pvalues:
                     env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
                     env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
             env["YEA_PLUGINS"] = ",".join(plugins)
-
+        print("******************")
+        print(env)
+        print(cmd_list)
+        print("******************")
+        input()
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
