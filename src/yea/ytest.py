@@ -207,19 +207,11 @@ class YeaTest:
             env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
             env["YEA_PARAM_VALUES"] = ",".join(map(str, self._permute_items))
 
-        print("++++++++++++++++++")
-        print(self._yc._plugs._plugin_list[0]._name)
-        print("++++++++++++++++++")
-        input()
         plugins = self._test_cfg.get("plugin", [])
-        print(plugins)
         if self._permute_groups and self._permute_items:
             params = {k: v for (k, v) in zip(self._permute_groups, self._permute_items)}
         else:
             params = None
-        print(params)
-        print()
-        input()
         if plugins:
             for plugin_name in plugins:
                 prefix = f":{plugin_name}:"
@@ -228,12 +220,9 @@ class YeaTest:
                     # need to configure the plugin?
                     # get the plugin by its name
                     plug = self._yc._plugs.get_plugin(plugin_name)
-                    print(plug)
                     plugin_params = get_config(params, prefix)
-                    print(plugin_params)
                     if plugin_params:
                         plug.monitors_configure(plugin_params)
-                    input()
 
                 # process vars
                 penv = plugin_name.upper()
@@ -248,11 +237,6 @@ class YeaTest:
                     env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
                     env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
             env["YEA_PLUGINS"] = ",".join(plugins)
-        print("******************")
-        print(env)
-        print(cmd_list)
-        print("******************")
-        input()
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
