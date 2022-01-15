@@ -1,7 +1,7 @@
 """Yea test class."""
 
 import configparser
-from functools import reduce
+import functools
 import itertools
 import json
 import os
@@ -98,14 +98,12 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
                 destination[key] = value
         return destination
 
-    prefixed_items = {
-        k[len(prefix):]: v for (k, v) in config.items() if k.startswith(prefix)
-    }
+    prefixed_items = {k[len(prefix) :]: v for (k, v) in config.items() if k.startswith(prefix)}
     parsed_items = []
     for k, v in prefixed_items.items():
         parsed_items.append(parse(k, v))
 
-    return reduce(merge, parsed_items) if parsed_items else {}
+    return functools.reduce(merge, parsed_items) if parsed_items else {}
 
 
 class YeaTest:
@@ -231,7 +229,7 @@ class YeaTest:
                 for items in self._test_cfg.get("var", []):
                     for k, v in items.items():
                         if k.startswith(prefix):
-                            pnames.append(k[len(prefix):])
+                            pnames.append(k[len(prefix) :])
                             pvalues.append(v)
                 if pnames and pvalues:
                     env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
