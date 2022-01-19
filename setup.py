@@ -11,10 +11,11 @@ setup(
     packages=["yea"],
     install_requires=[
         "coverage",
-        "jsonschema",
         "importlib-metadata>=3.0.0",
+        "jsonschema",
         "junit-xml",
         "PyYAML",
+        "requests",
     ],
     package_dir={"": "src"},
     entry_points={

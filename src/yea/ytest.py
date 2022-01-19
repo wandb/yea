@@ -9,16 +9,18 @@ import pathlib
 import subprocess
 import sys
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List, Mapping
 
 import requests
 
 from yea import testcfg, testspec
 
 
-def run_command(cmd_list, timeout=None, env=None):
-    env = env or os.environ
-    timeout = timeout or 300
+def run_command(
+    cmd_list: List[str],
+    timeout: int = 300,
+    env: Mapping = os.environ,
+):
     print("INFO: RUNNING=", cmd_list)
     p = subprocess.Popen(cmd_list, env=env)
     try:
@@ -35,8 +37,8 @@ def run_command(cmd_list, timeout=None, env=None):
     return p.returncode
 
 
-def download(url, fname):
-    err = False
+def download(url: str, fname: str) -> bool:
+    err: bool = False
     print(f"INFO: grabbing {fname} from {url}")
     try:
         with requests.get(url, stream=True) as r:
@@ -61,7 +63,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
             ":wandb:mock_server:lol": True,
             ":wandb:mock_server:lmao": False,
             ":wandb:mock_server:resistance:object": "Borg",
-            ":wandb:mock_server:resistance:futile": True,
+            ":wandb:mock_server:resistance:is_futile": True,
             ":wandb:foo": "bar",
         }
         prefix = ":wandb:"
@@ -72,7 +74,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
         #         "lmao": False,
         #         "resistance": {
         #             "object": "Borg",
-        #             "futile": True,
+        #             "is_futile": True,
         #         },
         #     },
         #     "foo": "bar",

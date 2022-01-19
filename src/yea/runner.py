@@ -63,7 +63,7 @@ class TestRunner:
         return alist
 
     def _get_dirs(self):
-        # generate to return all test dirs and rcursively found dirs
+        # generate to return all test dirs and recursively found dirs
         for tdir in self._cfg.test_dirs:
             path_dir = pathlib.Path(self._cfg.test_root, tdir)
             yield path_dir
@@ -117,7 +117,7 @@ class TestRunner:
                     # TODO: parse yea file looking for path info
                     spec = testspec.load_yaml_from_file(tpath)
 
-                    # if program is specied, keep track of yea file
+                    # if program is specified, keep track of yea file
                     py_fname = spec.get("command", {}).get("program")
                     if py_fname:
                         # hydrate to full path, take base from tpath
@@ -281,11 +281,11 @@ class TestRunner:
     def finish(self):
         self.clean()
         self._save_results()
-        exit = 0
+        exit_code = 0
         print("\nResults:")
         print("--------")
         if not self._results:
-            sys.exit(exit)
+            sys.exit(exit_code)
         tlen = max([len(tc.name) for tc in self._results])
         for tc in self._results:
             # TODO: fix hack that only looks at first message
@@ -296,8 +296,8 @@ class TestRunner:
 
             print("  {:<{}s}: {}{}".format(tc.name, tlen, emoji, r))
             if r:
-                exit = 1
-        sys.exit(exit)
+                exit_code = 1
+        sys.exit(exit_code)
 
     def get_tests(self):
         return self._test_list

@@ -4,6 +4,7 @@ import configparser
 import os
 import re
 from pathlib import Path
+from typing import List
 
 
 class Config:
@@ -24,7 +25,7 @@ class Config:
             self._cfroot = Path(".")
             self._test_dirs = ["."]
 
-    def _find_config(self) -> Path:
+    def _find_config(self) -> bool:
         p = Path.cwd()
         # TODO: change to use parents
         while True:
@@ -42,13 +43,13 @@ class Config:
             p = n
         return False
 
-    def _load_config(self):
+    def _load_config(self) -> configparser.ConfigParser:
         p = self._cfname
         cf = configparser.ConfigParser()
         cf.read(p)
         return cf
 
-    def _parse_config(self, cf):
+    def _parse_config(self, cf: configparser.ConfigParser) -> List[str]:
         ycfg = cf.items("yea")
         ydict = dict(ycfg)
         test_paths = ydict.get("test_paths", "")

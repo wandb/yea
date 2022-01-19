@@ -1,0 +1,10 @@
+[yea]
+
+test_paths =
+  tests/
+
+coverage_config_template = .coveragerc
+coverage_source = src/yea
+coverage_source_env = YEACOV_SOURCE
+
+results_file = test-results/junit-yea.xml
