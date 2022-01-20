@@ -138,7 +138,7 @@ class YeaTest:
     def _depend_install(self):
         err = False
         req = self._test_cfg.get("depend", {}).get("requirements", [])
-        options = self._test_cfg.get("depend", {}).get("pip_install_options", [])
+        options = self._test_cfg.get("depend", {}).get("pip_install_options", ["-qq"])
         timeout = self._test_cfg.get("depend", {}).get("pip_install_timeout")
         if not (req or options):
             return err
@@ -147,7 +147,7 @@ class YeaTest:
             with open(fname, "w") as f:
                 f.writelines(f"{item}\n" for item in req)
             options += ["-r", fname]
-        cmd_list = ["python", "-m", "pip", "install", "-qq"]
+        cmd_list = ["python", "-m", "pip", "install"]
         cmd_list.extend(options)
         exit_code = run_command(cmd_list, timeout=timeout)
         if req and os.path.exists(fname):
