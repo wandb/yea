@@ -6,15 +6,16 @@ from setuptools import setup
 
 setup(
     name="yea",
-    version="0.7.9",
+    version="0.7.10",
     description="Test harness breaking the sound barrier",
     packages=["yea"],
     install_requires=[
         "coverage",
-        "jsonschema",
         "importlib-metadata>=3.0.0",
+        "jsonschema",
         "junit-xml",
         "PyYAML",
+        "requests",
     ],
     package_dir={"": "src"},
     entry_points={

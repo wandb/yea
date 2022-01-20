@@ -1,6 +1,7 @@
 """Yea test class."""
 
 import configparser
+import functools
 import itertools
 import json
 import os
@@ -8,15 +9,18 @@ import pathlib
 import subprocess
 import sys
 import time
+from typing import Any, Dict, List, Mapping
 
 import requests
 
 from yea import testcfg, testspec
 
 
-def run_command(cmd_list, timeout=None, env=None):
-    env = env or os.environ
-    timeout = timeout or 300
+def run_command(
+    cmd_list: List[str],
+    timeout: int = 300,
+    env: Mapping = os.environ,
+):
     print("INFO: RUNNING=", cmd_list)
     p = subprocess.Popen(cmd_list, env=env)
     try:
@@ -33,8 +37,8 @@ def run_command(cmd_list, timeout=None, env=None):
     return p.returncode
 
 
-def download(url, fname):
-    err = False
+def download(url: str, fname: str) -> bool:
+    err: bool = False
     print(f"INFO: grabbing {fname} from {url}")
     try:
         with requests.get(url, stream=True) as r:
@@ -46,6 +50,62 @@ def download(url, fname):
         print("ERROR: url download error", url, e)
         err = True
     return err
+
+
+def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
+    """
+    Recursively parse a "flat" config with column-separated key name definitions
+    into a nested dictionary given a prefix.
+
+    Example:
+        config = {
+            ":rug:ties_room_together": True,
+            ":wandb:mock_server:lol": True,
+            ":wandb:mock_server:lmao": False,
+            ":wandb:mock_server:resistance:object": "Borg",
+            ":wandb:mock_server:resistance:is_futile": True,
+            ":wandb:foo": "bar",
+        }
+        prefix = ":wandb:"
+        get_config(config, prefix)
+        # {
+        #     "mock_server": {
+        #         "lol": True,
+        #         "lmao": False,
+        #         "resistance": {
+        #             "object": "Borg",
+        #             "is_futile": True,
+        #         },
+        #     },
+        #     "foo": "bar",
+        # }
+
+    """
+    # recursively get config values
+    def parse(key: str, value: Any):
+        if ":" not in key:
+            return {key: value}
+        else:
+            key, subkey = key.split(":", 1)
+            return {key: parse(subkey, value)}
+
+    # recursively merge configs
+    def merge(source: Dict[str, Any], destination: Dict[str, Any]):
+        for key, value in source.items():
+            if isinstance(value, dict):
+                # get node or create one
+                node = destination.setdefault(key, {})
+                merge(value, node)
+            else:
+                destination[key] = value
+        return destination
+
+    prefixed_items = {k[len(prefix) :]: v for (k, v) in config.items() if k.startswith(prefix)}
+    parsed_items = []
+    for k, v in prefixed_items.items():
+        parsed_items.append(parse(k, v))
+
+    return functools.reduce(merge, parsed_items) if parsed_items else {}
 
 
 class YeaTest:
@@ -145,17 +205,31 @@ class YeaTest:
             env.update(edict)
         if self._permute_groups and self._permute_items:
             env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
-            env["YEA_PARAM_VALUES"] = ",".join(self._permute_items)
+            env["YEA_PARAM_VALUES"] = ",".join(map(str, self._permute_items))
 
         plugins = self._test_cfg.get("plugin", [])
+        if self._permute_groups and self._permute_items:
+            params = {k: v for (k, v) in zip(self._permute_groups, self._permute_items)}
+        else:
+            params = None
         if plugins:
-            for p in plugins:
-                penv = p.upper()
+            for plugin_name in plugins:
+                prefix = f":{plugin_name}:"
+
+                if params is not None:
+                    # need to configure the plugin?
+                    # get the plugin by its name
+                    plug = self._yc._plugs.get_plugin(plugin_name)
+                    plugin_params = get_config(params, prefix)
+                    if plugin_params:
+                        plug.monitors_configure(plugin_params)
+
+                # process vars
+                penv = plugin_name.upper()
                 pnames = []
                 pvalues = []
                 for items in self._test_cfg.get("var", []):
                     for k, v in items.items():
-                        prefix = f":{p}:"
                         if k.startswith(prefix):
                             pnames.append(k[len(prefix) :])
                             pvalues.append(v)
@@ -163,7 +237,6 @@ class YeaTest:
                     env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
                     env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
             env["YEA_PLUGINS"] = ",".join(plugins)
-
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
@@ -239,7 +312,7 @@ class YeaTest:
         self._prep()
         if not self._args.dryrun:
             err = self._depend()
-            # TODO: record error insted of assert
+            # TODO: record error instead of assert
             assert not err, "Problem getting test dependencies"
             self._time_start = time.time()
             self._run()
@@ -269,10 +342,10 @@ class YeaTest:
             t._load()
             t._permute_groups = gnames
             t._permute_items = it
-            tpname = "{}-{}".format(tnum, "-".join(it))
+            tpname = f"{tnum}-{'-'.join(map(str, it))}"
             tid = t._test_cfg.get("id")
             if tid:
-                t._test_cfg["id"] = "{}.{}".format(tid, tpname)
+                t._test_cfg["id"] = f"{tid}.{tpname}"
             r.append(t)
         return r
 

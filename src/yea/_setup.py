@@ -34,7 +34,7 @@ def setup_plugins(params):
         mod_setup = getattr(mod, "setup", None)
         if not mod_setup:
             continue
-        mod_setup()
+        mod_setup(params)
 
 
 def setup():

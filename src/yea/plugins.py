@@ -24,6 +24,11 @@ class Plugins:
             plug = m.init_plugin(self._yc)
             self._plugin_list.append(plug)
 
+    def get_plugin(self, name: str):
+        for p in self._plugin_list:
+            if p._name == name:
+                return p
+
     def monitors_inform(self, tlist):
         for p in self._plugin_list:
             for t in tlist:
