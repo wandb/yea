@@ -11,7 +11,7 @@ from typing import Any, Dict, Generator, List, Optional, Union
 
 import junit_xml  # type: ignore
 
-from yea import testspec, ytest, context
+from yea import context, testspec, ytest
 
 from .yeadoc import YeadocSnippet, load_tests_from_docstring
 

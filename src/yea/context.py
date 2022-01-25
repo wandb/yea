@@ -1,6 +1,5 @@
 """yea context."""
 
-import argparse
 import datetime
 import logging
 import os
