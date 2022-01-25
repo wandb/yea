@@ -23,12 +23,12 @@ def convert(text: str) -> Union[int, str]:
     return int(text) if text.isdigit() else text.lower()
 
 
-def alphanum_sort(key: ytest.YeaTest) -> List[Union[int, str]]:
+def alphanum_sort(key: "ytest.YeaTest") -> List[Union[int, str]]:
     return [convert(c) for c in re.split("([0-9]+)", key._sort_key)]
 
 
 class TestRunner:
-    def __init__(self, *, yc: context.YeaContext):
+    def __init__(self, *, yc: "context.YeaContext"):
         self._tmpdir = pathlib.Path.cwd() / ".yeadoc"
         self.prepare()
         self._yc = yc
@@ -36,7 +36,7 @@ class TestRunner:
         self._args = yc._args
         self._test_files: List[str] = []
         self._results: List[junit_xml.TestCase] = []
-        self._test_list: List[ytest.YeaTest] = []
+        self._test_list: List["ytest.YeaTest"] = []
         self._populate()
 
     def prepare(self) -> None:
@@ -245,7 +245,7 @@ class TestRunner:
             if v != act:
                 result.append("BAD_{}({}:{}!={})".format(s, k, v, act))
 
-    def _capture_result(self, t: ytest.YeaTest) -> None:
+    def _capture_result(self, t: "ytest.YeaTest") -> None:
         test_cfg = t._test_cfg
         if not test_cfg:
             return
@@ -311,5 +311,5 @@ class TestRunner:
                 exit_code = 1
         sys.exit(exit_code)
 
-    def get_tests(self) -> List[ytest.YeaTest]:
+    def get_tests(self) -> List["ytest.YeaTest"]:
         return self._test_list

@@ -66,15 +66,15 @@ class YeaContext:
     def monitors_reset(self) -> None:
         self._plugs.monitors_reset()
 
-    def test_prep(self, yt: ytest.YeaTest) -> None:
+    def test_prep(self, yt: "ytest.YeaTest") -> None:
         # wandb_dir_safe_cleanup()
         self._plugs.test_prep(yt)
 
-    def test_done(self, yt: ytest.YeaTest) -> None:
+    def test_done(self, yt: "ytest.YeaTest") -> None:
         # wandb_dir_safe_cleanup()
         self._plugs.test_done(yt)
 
-    def test_check(self, yt: ytest.YeaTest) -> list:
+    def test_check(self, yt: "ytest.YeaTest") -> list:
         # ctx = self._backend.get_state()
         result_list = self._plugs.test_check(yt)
         return result_list

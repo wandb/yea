@@ -29,7 +29,7 @@ class CliArgs:
         self.tests: List[str] = args.tests
 
 
-def cli_list(yc: context.YeaContext) -> None:
+def cli_list(yc: "context.YeaContext") -> None:
     print("Tests:")
     yc._args.action = "list"
     tr = runner.TestRunner(yc=yc)
@@ -43,7 +43,7 @@ def cli_list(yc: context.YeaContext) -> None:
     tr.clean()
 
 
-def cli_run(yc: context.YeaContext) -> None:
+def cli_run(yc: "context.YeaContext") -> None:
     yc._args.action = "run"
     tr = runner.TestRunner(yc=yc)
     tr.run()
