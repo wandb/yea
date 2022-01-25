@@ -2,20 +2,20 @@
 
 import configparser
 import os
-import re
 from pathlib import Path
-from typing import List
+import re
+from typing import List, Optional
 
 
 class Config:
-    def __init__(self):
-        self._coverage_config_template = None
-        self._coverage_source = None
-        self._coverage_source_env = None
-        self._cfname = None
-        self._cfroot = None
+    def __init__(self) -> None:
+        self._coverage_config_template: Optional[str] = None
+        self._coverage_source: Optional[str] = None
+        self._coverage_source_env: Optional[str] = None
+        self._cfname: Optional[Path] = None
+        self._cfroot: Optional[Path] = None
         self._cf = None
-        self._test_dirs = []
+        self._test_dirs: List[str] = []
         found = self._find_config()
         if found:
             cf = self._load_config()
@@ -45,6 +45,8 @@ class Config:
 
     def _load_config(self) -> configparser.ConfigParser:
         p = self._cfname
+        if p is None:
+            raise ValueError("No config file found")
         cf = configparser.ConfigParser()
         cf.read(p)
         return cf
@@ -55,7 +57,7 @@ class Config:
         test_paths = ydict.get("test_paths", "")
         test_list = re.findall(r"[\S]+", test_paths)
         self._test_dirs = test_list
-        test_paths = ydict.get("test_paths", "")
+        # test_paths = ydict.get("test_paths", "")
 
         self._coverage_config_template = ydict.get("coverage_config_template", "")
         self._coverage_source = ydict.get("coverage_source")
@@ -68,9 +70,9 @@ class Config:
         return test_list
 
     @property
-    def test_dirs(self):
+    def test_dirs(self) -> List[str]:
         return self._test_dirs
 
     @property
-    def test_root(self):
+    def test_root(self) -> Optional[Path]:
         return self._cfroot
