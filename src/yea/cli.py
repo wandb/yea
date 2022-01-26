@@ -70,7 +70,7 @@ def cli() -> None:
     parse_run.set_defaults(func=cli_run)
     args = parser.parse_args()
     cli_args = CliArgs(args)
-    print(args)
+
     if not args.action:
         parser.print_help()
         sys.exit(1)
