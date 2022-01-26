@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-import jsonschema
+import jsonschema  # type: ignore
 
 import yaml
 
@@ -36,5 +36,5 @@ class TestlibConfig(dict):
     def __str__(self) -> str:
         return repr(self)
 
-    def __repr__(self):
-        return yaml.safe_dump(dict(self))
+    def __repr__(self) -> str:
+        return str(yaml.safe_dump(dict(self)))

@@ -7,11 +7,11 @@ import pathlib
 import re
 import shutil
 import sys
-from typing import Dict
+from typing import Any, Dict, Generator, List, Optional, Union
 
-import junit_xml
+import junit_xml  # type: ignore
 
-from yea import testspec, ytest
+from yea import context, testspec, ytest
 
 from .yeadoc import YeadocSnippet, load_tests_from_docstring
 
@@ -19,37 +19,36 @@ from .yeadoc import YeadocSnippet, load_tests_from_docstring
 logger = logging.getLogger(__name__)
 
 
-def convert(text):
+def convert(text: str) -> Union[int, str]:
     return int(text) if text.isdigit() else text.lower()
 
 
-def alphanum_sort(key):
+def alphanum_sort(key: "ytest.YeaTest") -> List[Union[int, str]]:
     return [convert(c) for c in re.split("([0-9]+)", key._sort_key)]
 
 
 class TestRunner:
-    def __init__(self, *, yc):
+    def __init__(self, *, yc: "context.YeaContext"):
+        self._tmpdir = pathlib.Path.cwd() / ".yeadoc"
         self.prepare()
         self._yc = yc
         self._cfg = yc._cfg
         self._args = yc._args
-        self._test_files = []
-        self._results = []
-        self._test_list = []
+        self._test_files: List[str] = []
+        self._results: List[junit_xml.TestCase] = []
+        self._test_list: List["ytest.YeaTest"] = []
         self._populate()
 
-    def prepare(self):
-        # initialize
-        self._tmpdir = pathlib.Path.cwd() / ".yeadoc"
+    def prepare(self) -> None:
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
         self._tmpdir.mkdir()
 
-    def clean(self):
+    def clean(self) -> None:
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
 
-    def _get_args_list(self):
+    def _get_args_list(self) -> Optional[List[str]]:
         # TODO: clean up args parsing
         args_tests = getattr(self._args, "tests", None)
         if not args_tests:
@@ -62,8 +61,10 @@ class TestRunner:
             alist.append(str(p))
         return alist
 
-    def _get_dirs(self):
+    def _get_dirs(self) -> Generator[pathlib.Path, None, None]:
         # generate to return all test dirs and recursively found dirs
+        if self._cfg.test_root is None:
+            raise TypeError("test_root is not set")
         for tdir in self._cfg.test_dirs:
             path_dir = pathlib.Path(self._cfg.test_root, tdir)
             yield path_dir
@@ -78,7 +79,7 @@ class TestRunner:
                     path_dir = pathlib.Path(self._cfg.test_root, root, d)
                     yield path_dir
 
-    def _populate(self):
+    def _populate(self) -> None:
         tpaths = []
 
         args_tests = self._get_args_list() or []
@@ -161,7 +162,7 @@ class TestRunner:
 
                 function_definitions = [node for node in mod.body if isinstance(node, ast.FunctionDef)]
                 for func in function_definitions:
-                    docstr = ast.get_docstring(func)
+                    docstr = ast.get_docstring(func) or ""
                     snippets = load_tests_from_docstring(docstr)
                     for s in snippets:
                         id_test_map[s.id] = s
@@ -170,14 +171,15 @@ class TestRunner:
                 for class_ in classes:
                     methods = [node for node in class_.body if isinstance(node, ast.FunctionDef)]
                     for func in methods:
-                        docstr = ast.get_docstring(func)
+                        docstr = ast.get_docstring(func) or ""
                         snippets = load_tests_from_docstring(docstr)
                         for s in snippets:
                             id_test_map[s.id] = s
-                    class_docstr = ast.get_docstring(class_)
-                    snippets = load_tests_from_docstring(class_docstr)
-                    for s in snippets:
-                        id_test_map[s.id] = s
+                    class_docstr = ast.get_docstring(class_) or ""
+                    if class_docstr is not None:
+                        snippets = load_tests_from_docstring(class_docstr)
+                        for s in snippets:
+                            id_test_map[s.id] = s
 
         for path_dir in self._get_dirs():
             for tpath in path_dir.glob("*.yea"):
@@ -219,13 +221,19 @@ class TestRunner:
         tlist.sort(key=alphanum_sort)
         self._test_list = tlist
 
-    def _runall(self):
+    def _runall(self) -> None:
         for t in self._test_list:
             self._yc.monitors_reset()
             t.run()
             self._capture_result(t)
 
-    def _check_dict(self, result, s, expected, actual):
+    def _check_dict(
+        self,
+        result: List[str],
+        s: Any,
+        expected: Optional[dict],
+        actual: dict,
+    ) -> None:
         if expected is None:
             return
         for k, v in actual.items():
@@ -237,7 +245,7 @@ class TestRunner:
             if v != act:
                 result.append("BAD_{}({}:{}!={})".format(s, k, v, act))
 
-    def _capture_result(self, t):
+    def _capture_result(self, t: "ytest.YeaTest") -> None:
         test_cfg = t._test_cfg
         if not test_cfg:
             return
@@ -248,13 +256,15 @@ class TestRunner:
         # print("GOTRES", result)
         result_str = ",".join(result)
         # self._results[t._tname] = result_str
+        if t._time_end is None or t._time_start is None:
+            raise RuntimeError("Test not run")
         elapsed = t._time_end - t._time_start
         tc = junit_xml.TestCase(t.test_id, classname="yea_func", elapsed_sec=elapsed)
         if result_str:
             tc.add_failure_info(message=result_str)
         self._results.append(tc)
 
-    def run(self):
+    def run(self) -> None:
         try:
             self._populate()
             # inform so we only start monitors needed
@@ -266,10 +276,12 @@ class TestRunner:
         finally:
             self._yc.monitors_stop()
 
-    def _save_results(self):
+    def _save_results(self) -> None:
         res_fname = self._yc._cfg._results_file
         if not res_fname:
             return
+        if self._yc._cfg._cfroot is None:
+            raise RuntimeError("No cfroot set")
         p = self._yc._cfg._cfroot.joinpath(res_fname)
         ts = junit_xml.TestSuite("yea-func", self._results)
         # create testfile dir if it doesnt exist
@@ -278,7 +290,7 @@ class TestRunner:
         with open(p, "w") as f:
             junit_xml.TestSuite.to_file(f, [ts], prettyprint=False, encoding="utf-8")
 
-    def finish(self):
+    def finish(self) -> None:
         self.clean()
         self._save_results()
         exit_code = 0
@@ -299,5 +311,5 @@ class TestRunner:
                 exit_code = 1
         sys.exit(exit_code)
 
-    def get_tests(self):
+    def get_tests(self) -> List["ytest.YeaTest"]:
         return self._test_list

@@ -9,18 +9,19 @@ import pathlib
 import subprocess
 import sys
 import time
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 
 from yea import testcfg, testspec
+from yea.context import YeaContext
 
 
 def run_command(
     cmd_list: List[str],
     timeout: int = 300,
     env: Mapping = os.environ,
-):
+) -> int:
     print("INFO: RUNNING=", cmd_list)
     p = subprocess.Popen(cmd_list, env=env)
     try:
@@ -82,7 +83,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
 
     """
     # recursively get config values
-    def parse(key: str, value: Any):
+    def parse(key: str, value: Any) -> Dict[str, Any]:
         if ":" not in key:
             return {key: value}
         else:
@@ -90,7 +91,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
             return {key: parse(subkey, value)}
 
     # recursively merge configs
-    def merge(source: Dict[str, Any], destination: Dict[str, Any]):
+    def merge(source: Dict[str, Any], destination: Dict[str, Any]) -> Dict[str, Any]:
         for key, value in source.items():
             if isinstance(value, dict):
                 # get node or create one
@@ -109,22 +110,22 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
 
 
 class YeaTest:
-    def __init__(self, *, tname, yc):
+    def __init__(self, *, tname: pathlib.Path, yc: YeaContext) -> None:
         self._tname = tname
         self._yc = yc
         self._args = yc._args
-        self._retcode = None
-        self._test_cfg = None
-        self._covrc = None
-        self._time_start = None
-        self._time_end = None
-        self._permute_groups = None
-        self._permute_items = None
+        self._retcode: int
+        self._test_cfg: testcfg.TestlibConfig
+        self._covrc: Optional[pathlib.Path] = None
+        self._time_start: Optional[Union[int, float]] = None
+        self._time_end: Optional[Union[int, float]] = None
+        self._permute_groups: Optional[List[Any]] = None
+        self._permute_items: Optional[Tuple[Any, ...]] = None
 
-    def __str__(self):
-        return "{}".format(self._tname)
+    def __str__(self) -> str:
+        return f"{self._tname}"
 
-    def _depend_files(self):
+    def _depend_files(self) -> bool:
         err = False
         dep = self._test_cfg.get("depend", {})
         files = dep.get("files", [])
@@ -135,7 +136,7 @@ class YeaTest:
             err = err or download(fs, fn)
         return err
 
-    def _depend_install(self):
+    def _depend_install(self) -> bool:
         err = False
         req = self._test_cfg.get("depend", {}).get("requirements", [])
         options = self._test_cfg.get("depend", {}).get("pip_install_options", ["-qq"])
@@ -155,7 +156,7 @@ class YeaTest:
         err = err or exit_code != 0
         return err
 
-    def _depend_uninstall(self):
+    def _depend_uninstall(self) -> bool:
         err = False
         req = self._test_cfg.get("depend", {}).get("uninstall", [])
         timeout = self._test_cfg.get("depend", {}).get("pip_uninstall_timeout")
@@ -171,7 +172,7 @@ class YeaTest:
         err = err or exit_code != 0
         return err
 
-    def _depend(self):
+    def _depend(self) -> bool:
         tname = self._tname
         print("INFO: DEPEND=", tname)
         tpath = pathlib.Path(tname)
@@ -183,7 +184,7 @@ class YeaTest:
 
         return err
 
-    def _run(self):
+    def _run(self) -> None:
         tname = self._tname
         print("INFO: RUN=", tname)
         program = self._test_cfg.get("command", {}).get("program")
@@ -208,10 +209,11 @@ class YeaTest:
             env["YEA_PARAM_VALUES"] = ",".join(map(str, self._permute_items))
 
         plugins = self._test_cfg.get("plugin", [])
-        if self._permute_groups and self._permute_items:
-            params = {k: v for (k, v) in zip(self._permute_groups, self._permute_items)}
-        else:
-            params = None
+        params = (
+            {k: v for (k, v) in zip(self._permute_groups, self._permute_items)}
+            if self._permute_groups and self._permute_items
+            else None
+        )
         if plugins:
             for plugin_name in plugins:
                 prefix = f":{plugin_name}:"
@@ -240,7 +242,7 @@ class YeaTest:
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
-    def _load(self):
+    def _load(self) -> None:
         spec = None
         # load yea file if exists
         fname = str(self._tname)
@@ -258,57 +260,61 @@ class YeaTest:
         # print("TESTCFG", cfg)
         self._test_cfg = cfg
 
-    def _prep(self):
+    def _prep(self) -> None:
         """Cleanup and/or populate wandb dir."""
         self._yc.test_prep(self)
         # load file and docstring eval criteria
         self._setup_coverage_file()
         self._setup_coverage_config()
 
-    def _setup_coverage_file(self):
+    def _setup_coverage_file(self) -> None:
         # dont mess with coverage_file (for now) if already set
-        if self._yc._covfile:
+        if self._yc._covfile is not None:
             return
         covfname = ".coverage-{}-{}".format(self._yc._pid, self.test_id)
         covfile = self._yc._cachedir.joinpath(covfname)
         os.environ["COVERAGE_FILE"] = str(covfile)
 
-    def _setup_coverage_config(self):
+    def _setup_coverage_config(self) -> None:
         # do we have a template?
         template = self._yc._cfg._coverage_config_template
         if not template:
             return
         cov_src = self._yc._cfg._coverage_source
         cov_env = self._yc._cfg._coverage_source_env
-        if cov_env:
+        if cov_env is not None:
             cov_env_src = os.environ.get(cov_env)
             if cov_env_src:
                 cov_src = cov_env_src
-        if not cov_src:
+        if cov_src is None:
             return
 
         # find our sources
-        #   sourceis from tox (set in env)
+        #   source is from tox (set in env)
         #   or set from conf (if not in env)
+        if self._yc._cfg._cfroot is None:
+            raise RuntimeError("_cf_root not set")
         p = self._yc._cfg._cfroot.joinpath(template)
-        assert p.exists()
+        if not p.exists():
+            raise RuntimeError(f"Coverage config template {p} does not exist")
+
         cf = configparser.ConfigParser()
         cf.read(p)
 
         cf["run"]["source"] = cov_src
 
-        covrc_fname = "yea-covrc-{}-{}.conf".format(self._yc._pid, self.test_id)
+        covrc_fname = f"yea-covrc-{self._yc._pid}-{self.test_id}.conf"
         covrc = self._yc._cachedir.joinpath(covrc_fname)
         with open(covrc, "w") as configfile:
             cf.write(configfile)
 
         self._covrc = covrc
 
-    def _fin(self):
+    def _fin(self) -> None:
         """Reap anything in wandb dir"""
         self._yc.test_done(self)
 
-    def run(self):
+    def run(self) -> None:
         self._prep()
         if not self._args.dryrun:
             err = self._depend()
@@ -319,7 +325,7 @@ class YeaTest:
             self._time_end = time.time()
         self._fin()
 
-    def get_permutations(self):
+    def get_permutations(self) -> List["YeaTest"]:
         self._load()
         params = self._test_cfg.get("parametrize")
         if not params:
@@ -350,21 +356,23 @@ class YeaTest:
         return r
 
     @property
-    def name(self):
+    def name(self) -> str:
         root = self._yc._cfg._cfroot
+        if root is None:
+            raise TypeError("Config root not set")
         b = self._tname.relative_to(root)
         return str(b)
 
     @property
-    def test_id(self):
-        tid = self._test_cfg.get("id") if self._test_cfg else None
+    def test_id(self) -> Optional[str]:
+        tid = str(self._test_cfg.get("id", "")) if self._test_cfg else None
         return tid
 
     @property
-    def _sort_key(self):
-        tid = self._test_cfg.get("id") if self._test_cfg else ""
+    def _sort_key(self) -> str:
+        tid = str(self._test_cfg.get("id", "")) if self._test_cfg else ""
         return tid + ":" + self.name
 
     @property
-    def config(self):
+    def config(self) -> testcfg.TestlibConfig:
         return self._test_cfg
