@@ -245,8 +245,7 @@ class YeaTest:
                     env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
                     env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
             env["YEA_PLUGINS"] = ",".join(plugins)
-        print(cmd_list)
-        input()
+
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
