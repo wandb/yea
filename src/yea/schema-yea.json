@@ -64,6 +64,10 @@
                     "type": "string",
                     "description": "Program name"
                 },
+                "mode": {
+                    "type": "string",
+                    "description": "Execution mode: default (./module/lib.py) or module (python -m module.lib)"
+                },
                 "args": {
                     "type": "array",
                     "items": {

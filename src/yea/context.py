@@ -10,7 +10,7 @@ from yea import cli, config, plugins, ytest
 
 
 class YeaContext:
-    def __init__(self, *, args: cli.CliArgs):
+    def __init__(self, *, args: "cli.CliArgs"):
         self._args = args
         self._cachedir: Path
         self._covfile: Optional[str] = None

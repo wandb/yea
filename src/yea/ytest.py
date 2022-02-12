@@ -13,8 +13,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 
-from yea import testcfg, testspec
-from yea.context import YeaContext
+from yea import context, testcfg, testspec
 
 
 def run_command(
@@ -110,7 +109,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
 
 
 class YeaTest:
-    def __init__(self, *, tname: pathlib.Path, yc: YeaContext) -> None:
+    def __init__(self, *, tname: pathlib.Path, yc: "context.YeaContext") -> None:
         self._tname = tname
         self._yc = yc
         self._args = yc._args
@@ -139,15 +138,17 @@ class YeaTest:
     def _depend_install(self) -> bool:
         err = False
         req = self._test_cfg.get("depend", {}).get("requirements", [])
-        options = self._test_cfg.get("depend", {}).get("pip_install_options", ["-qq"])
+        options = self._test_cfg.get("depend", {}).get("pip_install_options", [])
         timeout = self._test_cfg.get("depend", {}).get("pip_install_timeout")
         if not (req or options):
             return err
+        if not options:
+            options.append("-qq")
         if req:
             fname = ".yea-requirements.txt"
             with open(fname, "w") as f:
                 f.writelines(f"{item}\n" for item in req)
-            options += ["-r", fname]
+            options.extend(["-r", fname])
         cmd_list = ["python", "-m", "pip", "install"]
         cmd_list.extend(options)
         exit_code = run_command(cmd_list, timeout=timeout)
@@ -188,14 +189,19 @@ class YeaTest:
         tname = self._tname
         print("INFO: RUN=", tname)
         program = self._test_cfg.get("command", {}).get("program")
+        mode = self._test_cfg.get("command", {}).get("mode", "default")
         tpath = pathlib.Path(tname)
         os.chdir(tpath.parent)
-        cmd = "./{}".format(program or tpath.name)
-        # cmd_list = [cmd]
+        if program is None:
+            cmd = [f"./{tpath.name}"]
+        elif mode == "module":
+            cmd = ["-m", program.split(".py")[0].replace("/", ".")]
+        else:
+            cmd = [f"./{program}"]
         cmd_list = ["coverage", "run"]
         if self._covrc:
             cmd_list.extend(["--rcfile", str(self._covrc)])
-        cmd_list.extend([cmd])
+        cmd_list.extend(cmd)
         cmd_cfg = self._test_cfg.get("command", {})
         args = cmd_cfg.get("args", [])
         timeout = cmd_cfg.get("timeout")
@@ -239,6 +245,8 @@ class YeaTest:
                     env[f"YEA_PLUGIN_{penv}_NAMES"] = ",".join(pnames)
                     env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
             env["YEA_PLUGINS"] = ",".join(plugins)
+        print(cmd_list)
+        input()
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
         self._retcode = exit_code
 
