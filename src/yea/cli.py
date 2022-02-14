@@ -4,7 +4,7 @@ import argparse
 import sys
 from typing import Callable, List, Optional
 
-from yea import context, runner, __version__
+from yea import __version__, context, runner
 
 
 if sys.version_info >= (3, 8):
