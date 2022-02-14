@@ -67,6 +67,7 @@
                 "mode": {
                     "type": "string",
                     "description": "Execution mode: default (./module/lib.py) or module (python -m module.lib)",
+                    "default": "default",
                     "enum": ["default", "module"]
                 },
                 "args": {
