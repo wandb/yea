@@ -4,7 +4,7 @@ import argparse
 import sys
 from typing import Callable, List, Optional
 
-from yea import context, runner
+from yea import context, runner, __version__
 
 
 if sys.version_info >= (3, 8):
@@ -53,12 +53,13 @@ def cli() -> None:
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers(dest="action", title="action", description="Action to perform")
-    parser.add_argument("--dryrun", action="store_true", help="Dont do anything")
-    parser.add_argument("--live", action="store_true", help="Run against real server")
     parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
+    parser.add_argument("--docs-only", help="Read tests from docstrings only", action="store_true")
+    parser.add_argument("--dryrun", action="store_true", help="Do not do anything")
+    parser.add_argument("--live", action="store_true", help="Run against real server")
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
-    parser.add_argument("--docs-only", help="Read tests from docstrings only.", action="store_true")
+    parser.add_argument("--version", help="Print version and exit", action="store_true")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
     parse_list.set_defaults(func=cli_list)
@@ -69,6 +70,10 @@ def cli() -> None:
     parse_run.add_argument("tests", nargs="*")
     parse_run.set_defaults(func=cli_run)
     args = parser.parse_args()
+
+    if args.version:
+        print("Yea {}".format(__version__))
+        sys.exit(0)
 
     if not args.action:
         parser.print_help()
