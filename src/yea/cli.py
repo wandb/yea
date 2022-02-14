@@ -69,12 +69,12 @@ def cli() -> None:
     parse_run.add_argument("tests", nargs="*")
     parse_run.set_defaults(func=cli_run)
     args = parser.parse_args()
-    cli_args = CliArgs(args)
 
     if not args.action:
         parser.print_help()
         sys.exit(1)
 
+    cli_args = CliArgs(args)
     yc = context.YeaContext(args=cli_args)
     args.func(yc)
 

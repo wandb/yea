@@ -12,44 +12,44 @@ commands:
     description: "Restore tox environment from cache"
     steps:
       - restore_cache:
-              keys:
-              - v0.1-toxenv-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
-              - v0.1-toxenv-master-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
-              - v0.1-toxenv-master-{{ .Environment.CIRCLE_JOB }}-
+          keys:
+            - v0.1-toxenv-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
+            - v0.1-toxenv-master-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
+            - v0.1-toxenv-master-{{ .Environment.CIRCLE_JOB }}-
 
 workflows:
   main:
     jobs:
       - test:
-         name: "code-check"
-         image: "python:3.7"
-         toxenv: "black,flake8,mypy"
+          name: "code-check"
+          image: "python:3.7"
+          toxenv: "black,flake8,mypy"
       - test:
-         name: "lin-py37"
-         image: "python:3.7"
-         toxenv: "py37,covercircle"
+          name: "lin-py37"
+          image: "python:3.7"
+          toxenv: "py37,covercircle"
 
 jobs:
-    test:
-        resource_class: large
-        parameters:
-            image:
-              type: string
-            toxenv:
-              type: string
-        docker:
-            - image: << parameters.image >>
-        working_directory: /mnt/ramdisk
-        steps:
-            - checkout
-            - run:
-                  name: Install python dependencies
-                  command: |
-                      pip install tox==3.24.0
-            - restore-tox-cache
-            - run:
-                  name: Run tests
-                  command: |
-                      tox -v -e << parameters.toxenv >>
-                  no_output_timeout: 10m
-            - save-tox-cache
+  test:
+    resource_class: large
+    parameters:
+      image:
+        type: string
+      toxenv:
+        type: string
+    docker:
+      - image: << parameters.image >>
+    working_directory: /mnt/ramdisk
+    steps:
+      - checkout
+      - run:
+          name: Install python dependencies
+          command: |
+            pip install tox==3.24.0
+      - restore-tox-cache
+      - run:
+          name: Run tests
+          command: |
+            tox -v -e << parameters.toxenv >>
+          no_output_timeout: 10m
+      - save-tox-cache
