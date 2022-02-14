@@ -189,7 +189,8 @@ class YeaTest:
         tname = self._tname
         print("INFO: RUN=", tname)
         program = self._test_cfg.get("command", {}).get("program")
-        mode = self._test_cfg.get("command", {}).get("mode", "default")
+        # test execution mode: default (./module/lib.py) or module (python -m module.lib)
+        mode = self._test_cfg.get("command", {}).get("mode")
         tpath = pathlib.Path(tname)
         os.chdir(tpath.parent)
         if program is None:
