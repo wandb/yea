@@ -79,6 +79,39 @@ class TestRunner:
                     path_dir = pathlib.Path(self._cfg.test_root, root, d)
                     yield path_dir
 
+    def _get_platform(self) -> str:
+        if self._args.platform:
+            return self._args.platform
+        p = sys.platform
+        if p.startswith("win"):
+            p = "win"
+        elif p == "darwin":
+            p = "mac"
+        return p
+
+    def _should_skip_test(self, spec: Any) -> bool:
+        my_platform = self._get_platform()
+        suite = spec.get("tag", {}).get("suite", "main")
+        shards = spec.get("tag", {}).get("shards", [])
+        shard = spec.get("tag", {}).get("shard", "default")
+        platforms = spec.get("tag", {}).get("platforms")
+        shards.append(shard)
+        skips = spec.get("tag", {}).get("skip")
+        for skip in skips:
+            skip_platforms = skip.get("platforms")
+            # right now the only specific skip is platform, if not specified skip all
+            if skip_platforms is None:
+                return True
+            if skip_platforms and my_platform in skip_platforms:
+                return True
+        if self._args.suite and self._args.suite != suite:
+            return True
+        if self._args.shard and self._args.shard not in shards:
+            return True
+        if platforms and my_platform not in platforms:
+            return True
+        return False
+
     def _populate(self) -> None:
         tpaths = []
 
@@ -104,13 +137,7 @@ class TestRunner:
                         continue
 
                     if all_tests:
-                        if spec.get("tag", {}).get("skip", False):
-                            continue
-                        suite = spec.get("tag", {}).get("suite", "main")
-                        shard = spec.get("tag", {}).get("shard", "default")
-                        if self._args.suite and self._args.suite != suite:
-                            continue
-                        if self._args.shard and self._args.shard != shard:
+                        if self._should_skip_test(spec):
                             continue
 
                     tpaths.append(tpath)
@@ -131,15 +158,8 @@ class TestRunner:
                     if not os.path.exists(py_fname):
                         continue
 
-                    # TODO: DRY. code is same as above, refactor sometime
                     if all_tests:
-                        if spec.get("tag", {}).get("skip", False):
-                            continue
-                        suite = spec.get("tag", {}).get("suite", "main")
-                        shard = spec.get("tag", {}).get("shard", "default")
-                        if self._args.suite and self._args.suite != suite:
-                            continue
-                        if self._args.shard and self._args.shard != shard:
+                        if self._should_skip_test(spec):
                             continue
 
                     if not all_tests:
@@ -157,7 +177,7 @@ class TestRunner:
             for tpath in path_dir.glob("*.py"):
 
                 # parse the test file using ast
-                with open(tpath) as f:
+                with open(tpath, encoding="utf8") as f:
                     mod = ast.parse(f.read())
 
                 function_definitions = [node for node in mod.body if isinstance(node, ast.FunctionDef)]

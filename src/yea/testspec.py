@@ -10,7 +10,7 @@ import yaml
 
 
 def load_docstring(filepath: Union[str, pathlib.Path]) -> str:
-    with open(filepath) as fd:
+    with open(filepath, encoding="utf8") as fd:
         file_contents = fd.read()
     module = ast.parse(file_contents)
     docstring = ast.get_docstring(module)
@@ -51,7 +51,7 @@ def load_yaml_from_str(yaml_string: str) -> Dict[str, Any]:
 
 def load_yaml_from_file(filepath: Union[str, pathlib.Path]) -> Dict[str, Any]:
     file_contents = ""
-    with open(filepath) as fd:
+    with open(filepath, encoding="utf8") as fd:
         file_contents = fd.read()
     found = find_yaml_str(file_contents)
     found = found or file_contents

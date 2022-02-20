@@ -24,8 +24,38 @@
                 "shard": {
                     "type": "string"
                 },
+                "shards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "platforms": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "default": "all",
+                        "enum": ["all", "linux", "mac", "win"]
+                    }
+                },
                 "skip": {
-                    "type": "boolean"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+		        "additionalProperties": false,
+		        "properties": {
+                            "reason": {
+                                "type": "string"
+                            },
+                            "platforms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["linux", "mac", "win"]
+			        }
+                            }
+		        }
+		    }
                 }
             }
         },
