@@ -94,25 +94,27 @@ class TestRunner:
         suite = spec.get("tag", {}).get("suite", "main")
         shards = spec.get("tag", {}).get("shards", [])
         shard = spec.get("tag", {}).get("shard", "default")
-        platforms = spec.get("tag", {}).get("platforms")
+        platforms = spec.get("tag", {}).get("platforms", [])
         shards.append(shard)
-        skips = spec.get("tag", {}).get("skip")
-        if skips is not None:
-            # allow empty skip to be force skip (should req reason)
-            if len(skips) == 0:
+        skip_all = spec.get("tag", {}).get("skip", False)
+        skips = spec.get("tag", {}).get("skips", [])
+        if skip_all:
+            return True
+        for skip in skips:
+            skip_platform = skip.get("platform")
+            # right now the only specific skip is platform, if not specified skip all
+            if skip_platform is None:
                 return True
-            for skip in skips:
-                skip_platforms = skip.get("platforms")
-                # right now the only specific skip is platform, if not specified skip all
-                if skip_platforms is None:
-                    return True
-                if skip_platforms and my_platform in skip_platforms:
-                    return True
+            if skip_platform and my_platform == skip_platform:
+                return True
         if self._args.suite and self._args.suite != suite:
             return True
         if self._args.shard and self._args.shard not in shards:
             return True
         if platforms and my_platform not in platforms:
+            return True
+        # if we specify platform, skip any platform that doesnt match
+        if self._args.platform and my_platform not in platforms:
             return True
         return False
 

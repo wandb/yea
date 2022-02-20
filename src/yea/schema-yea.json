@@ -34,11 +34,13 @@
                     "type": "array",
                     "items": {
                         "type": "string",
-                        "default": "all",
-                        "enum": ["all", "linux", "mac", "win"]
+                        "enum": ["linux", "mac", "win"]
                     }
                 },
                 "skip": {
+                    "type": "bool"
+		},
+                "skips": {
                     "type": "array",
                     "items": {
                         "type": "object",
@@ -47,12 +49,9 @@
                             "reason": {
                                 "type": "string"
                             },
-                            "platforms": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": ["linux", "mac", "win"]
-			        }
+                            "platform": {
+                                "type": "string",
+                                "enum": ["linux", "mac", "win"]
                             }
 		        }
 		    }
