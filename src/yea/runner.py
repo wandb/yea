@@ -325,12 +325,14 @@ class TestRunner:
         if not self._results:
             sys.exit(exit_code)
         tlen = max([len(tc.name) for tc in self._results])
+
+        use_emoji = not sys.platform.startswith("win")
         for tc in self._results:
             # TODO: fix hack that only looks at first message
             r = tc.failures[0]["message"] if tc.failures else ""
-            emoji = "😃"
+            emoji = "😃" if use_emoji else ":)"
             if r:
-                emoji = '🐴 "Neigh" -- '
+                emoji = '🐴 "Neigh" -- ' if use_emoji else 'XX "Neigh" -- '
 
             print("  {:<{}s}: {}{}".format(tc.name, tlen, emoji, r))
             if r:
