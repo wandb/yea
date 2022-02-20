@@ -97,13 +97,17 @@ class TestRunner:
         platforms = spec.get("tag", {}).get("platforms")
         shards.append(shard)
         skips = spec.get("tag", {}).get("skip")
-        for skip in skips:
-            skip_platforms = skip.get("platforms")
-            # right now the only specific skip is platform, if not specified skip all
-            if skip_platforms is None:
+        if skips is not None:
+            # allow empty skip to be force skip (should req reason)
+            if len(skips) == 0:
                 return True
-            if skip_platforms and my_platform in skip_platforms:
-                return True
+            for skip in skips:
+                skip_platforms = skip.get("platforms")
+                # right now the only specific skip is platform, if not specified skip all
+                if skip_platforms is None:
+                    return True
+                if skip_platforms and my_platform in skip_platforms:
+                    return True
         if self._args.suite and self._args.suite != suite:
             return True
         if self._args.shard and self._args.shard not in shards:
