@@ -24,6 +24,7 @@ class CliArgs:
         self.dryrun: bool = args.dryrun
         self.func: Callable = args.func
         self.live: bool = args.live
+        self.platform: Optional[str] = args.platform
         self.shard: Optional[str] = args.shard
         self.suite: Optional[str] = args.suite
         self.tests: List[str] = args.tests
@@ -59,6 +60,7 @@ def cli() -> None:
     parser.add_argument("--live", action="store_true", help="Run against real server")
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
+    parser.add_argument("--platform", help="Specify testing platform")
     parser.add_argument("--version", help="Print version and exit", action="store_true")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])
