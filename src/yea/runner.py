@@ -29,10 +29,12 @@ def alphanum_sort(key: "ytest.YeaTest") -> List[Union[int, str]]:
 
 class TestRunner:
     def __init__(self, *, yc: "context.YeaContext"):
-        self._tmpdir = pathlib.Path.cwd() / ".yeadoc"
-        self.prepare()
         self._yc = yc
         self._cfg = yc._cfg
+        if self._cfg.test_root is None:
+            raise TypeError("test_root is not set")
+        self._tmpdir = pathlib.Path(self._cfg.test_root, ".yeadoc")
+        self.prepare()
         self._args = yc._args
         self._test_files: List[str] = []
         self._results: List[junit_xml.TestCase] = []

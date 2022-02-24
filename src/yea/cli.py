@@ -16,6 +16,8 @@ else:
 class CliArgs:
     """Typed command line arguments."""
 
+    plugin_args: List[str]
+
     def __init__(self, args: argparse.Namespace):
         self.action: Literal["run", "list", "r", "l"] = args.action
         self.all: bool = args.all if hasattr(args, "all") else False
@@ -28,6 +30,7 @@ class CliArgs:
         self.shard: Optional[str] = args.shard
         self.suite: Optional[str] = args.suite
         self.tests: List[str] = args.tests
+        self.plugin_args = args.plugin_args or []
 
 
 def cli_list(yc: "context.YeaContext") -> None:
@@ -61,6 +64,7 @@ def cli() -> None:
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
     parser.add_argument("--platform", help="Specify testing platform")
+    parser.add_argument("-p", "--plugin-args", action="append", help="Add plugin args")
     parser.add_argument("--version", help="Print version and exit", action="store_true")
 
     parse_list = subparsers.add_parser("list", aliases=["l"])

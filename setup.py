@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="yea",
-    version="0.7.13",
+    version="0.7.14",
     description="Test harness breaking the sound barrier",
     packages=["yea"],
     install_requires=[
