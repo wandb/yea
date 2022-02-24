@@ -137,25 +137,25 @@ class YeaTest:
 
     def _depend_install(self) -> bool:
         err = False
-        req = self._test_cfg.get("depend", {}).get("requirements", [])
+        req_list = self._test_cfg.get("depend", {}).get("requirements", [])
         options = self._test_cfg.get("depend", {}).get("pip_install_options", [])
         timeout = self._test_cfg.get("depend", {}).get("pip_install_timeout")
-        if not (req or options):
+        if not (req_list or options):
             return err
         if not options:
             options.append("-qq")
-        if req:
-            fname = ".yea-requirements.txt"
-            with open(fname, "w") as f:
-                f.writelines(f"{item}\n" for item in req)
-            options.extend(["-r", fname])
-        cmd_list = ["python", "-m", "pip", "install"]
-        cmd_list.extend(options)
-        exit_code = run_command(cmd_list, timeout=timeout)
-        if req and os.path.exists(fname):
-            os.remove(fname)
-        err = err or exit_code != 0
-        return err
+        for req in req_list:
+            cmd_list = ["python", "-m", "pip", "install"]
+            cmd_list.extend(options)
+            if " " in req:
+                cmd_list.extend(req.split(" "))
+            else:
+                cmd_list.append(req)
+            exit_code = run_command(cmd_list, timeout=timeout)
+            err = err or exit_code != 0
+            if err:
+                return err
+        return False
 
     def _depend_uninstall(self) -> bool:
         err = False
