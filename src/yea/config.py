@@ -66,8 +66,9 @@ class Config:
         if self._coverage_source and self.test_root:
             self._coverage_source = os.path.join(self.test_root, self._coverage_source)
         self._coverage_source_env = ydict.get("coverage_source_env")
-        if ydict.get("coverage_run_in_process"):
-            self._coverage_run_in_process = ydict.get("coverage_run_in_process").lower() == "true"
+        coverage_run_in_process = ydict.get("coverage_run_in_process")
+        if coverage_run_in_process is not None:
+            self._coverage_run_in_process = coverage_run_in_process.lower() == "true"
         self._results_file = ydict.get("results_file")
 
         return test_list
