@@ -6,5 +6,6 @@ test_paths =
 coverage_config_template = .coveragerc
 coverage_source = src/yea
 coverage_source_env = YEACOV_SOURCE
+coverage_run_in_process = true
 
 results_file = test-results/junit-yea.xml

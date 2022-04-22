@@ -12,6 +12,7 @@ class Config:
         self._coverage_config_template: Optional[str] = None
         self._coverage_source: Optional[str] = None
         self._coverage_source_env: Optional[str] = None
+        self._coverage_run_in_process: bool = True
         self._cfname: Optional[Path] = None
         self._cfroot: Optional[Path] = None
         self._cf = None
@@ -65,6 +66,9 @@ class Config:
         if self._coverage_source and self.test_root:
             self._coverage_source = os.path.join(self.test_root, self._coverage_source)
         self._coverage_source_env = ydict.get("coverage_source_env")
+        coverage_run_in_process = ydict.get("coverage_run_in_process")
+        if coverage_run_in_process is not None:
+            self._coverage_run_in_process = coverage_run_in_process.lower() == "true"
         self._results_file = ydict.get("results_file")
 
         return test_list
