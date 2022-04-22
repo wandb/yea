@@ -42,13 +42,13 @@ class TestRunner:
         self._populate()
 
     def prepare(self) -> None:
-        os.environ["YEA_IS_RUNNING"] = "True"
+        os.environ["YEA_RUN_COVERAGE"] = self._yc._cfg._coverage_run_in_process
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
         self._tmpdir.mkdir()
 
     def clean(self) -> None:
-        os.environ.pop("YEA_IS_RUNNING", None)
+        os.environ.pop("YEA_RUN_COVERAGE", None)
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
 
