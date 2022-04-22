@@ -42,11 +42,13 @@ class TestRunner:
         self._populate()
 
     def prepare(self) -> None:
+        os.environ["YEA_IS_RUNNING"] = "True"
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
         self._tmpdir.mkdir()
 
     def clean(self) -> None:
+        os.environ.pop("YEA_IS_RUNNING", None)
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
 
