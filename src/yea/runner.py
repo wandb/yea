@@ -43,7 +43,6 @@ class TestRunner:
 
     def prepare(self) -> None:
         os.environ["YEA_IS_RUNNING"] = "True"
-        print("YEA!!!!")
         if self._tmpdir.exists():
             shutil.rmtree(self._tmpdir)
         self._tmpdir.mkdir()
