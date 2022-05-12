@@ -38,7 +38,7 @@
                     }
                 },
                 "skip": {
-                    "type": "bool"
+                    "type": "boolean"
 		},
                 "skips": {
                     "type": "array",
