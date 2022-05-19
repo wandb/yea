@@ -180,9 +180,8 @@ class TestRunner:
                             continue
 
                     if not all_tests:
-                        if (
-                            (py_fname not in args_tests and str(tpath) not in args_tests)
-                            or self._should_skip_test(spec)
+                        if (py_fname not in args_tests and str(tpath) not in args_tests) or self._should_skip_test(
+                            spec
                         ):
                             logger.debug("skip yea fname {}".format(tpath))
                             continue
