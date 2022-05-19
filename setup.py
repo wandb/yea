@@ -16,6 +16,7 @@ setup(
         "junit-xml",
         "PyYAML",
         "requests",
+        "typing_extensions",
     ],
     package_dir={"": "src"},
     entry_points={

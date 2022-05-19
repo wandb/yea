@@ -39,7 +39,10 @@ class YeaContext:
         logger = logging.getLogger("yea")
         logger.propagate = False
         logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(fmt="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+        formatter = logging.Formatter(
+            fmt="%(asctime)s %(levelname)-8s %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
         logfname = "debug-{}-{}.log".format(self._ts, self._pid)
         lf = self._cachedir.joinpath(logfname)
         fh = logging.FileHandler(lf)

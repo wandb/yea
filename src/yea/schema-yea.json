@@ -39,13 +39,13 @@
                 },
                 "skip": {
                     "type": "boolean"
-		},
+		        },
                 "skips": {
                     "type": "array",
                     "items": {
                         "type": "object",
-		        "additionalProperties": false,
-		        "properties": {
+                        "additionalProperties": false,
+                        "properties": {
                             "reason": {
                                 "type": "string"
                             },
@@ -53,8 +53,8 @@
                                 "type": "string",
                                 "enum": ["linux", "mac", "win"]
                             }
-		        }
-		    }
+                        }
+                    }
                 }
             }
         },
@@ -131,10 +131,10 @@
                 },
                 "pip_install_timeout": {
                     "type": "integer"
-		},
+		        },
                 "pip_uninstall_timeout": {
                     "type": "integer"
-		},
+		        },
                 "pip_install_options": {
                     "type": "array",
                     "items": {

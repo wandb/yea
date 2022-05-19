@@ -29,8 +29,8 @@ class CliArgs:
         self.platform: Optional[str] = args.platform
         self.shard: Optional[str] = args.shard
         self.suite: Optional[str] = args.suite
-        self.tests: List[str] = args.tests
-        self.plugin_args = args.plugin_args or []
+        self.tests: Optional[List[str]] = args.tests
+        self.plugin_args: list = args.plugin_args or []
 
 
 def cli_list(yc: "context.YeaContext") -> None:

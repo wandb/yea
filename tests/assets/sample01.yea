@@ -1,0 +1,6 @@
+# test skipping
+id: 0.sample.01
+tag:
+  skip: true
+command:
+  program: sample01.py
