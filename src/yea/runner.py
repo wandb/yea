@@ -118,7 +118,7 @@ class TestRunner:
             return True
         if platforms and my_platform not in platforms:
             return True
-        # if we specify platform, skip any platform that doesnt match
+        # if we specify platform, skip any platform that doesn't match
         if self._args.platform and my_platform not in platforms:
             return True
         return False
@@ -151,7 +151,13 @@ class TestRunner:
                         if self._should_skip_test(spec):
                             continue
 
+                    if not all_tests:
+                        if (str(tpath) not in args_tests) or self._should_skip_test(spec):
+                            logger.debug("skip yea fname {}".format(tpath))
+                            continue
+
                     tpaths.append(tpath)
+
                 for tpath in path_dir.glob("*.yea"):
                     # TODO: parse yea file looking for path info
                     spec = testspec.load_yaml_from_file(tpath)
@@ -174,7 +180,9 @@ class TestRunner:
                             continue
 
                     if not all_tests:
-                        if py_fname not in args_tests and str(tpath) not in args_tests:
+                        if (py_fname not in args_tests and str(tpath) not in args_tests) or self._should_skip_test(
+                            spec
+                        ):
                             logger.debug("skip yea fname {}".format(tpath))
                             continue
 

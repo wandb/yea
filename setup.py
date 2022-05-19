@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="yea",
-    version="0.7.16",
+    version="0.7.17",
     description="Test harness breaking the sound barrier",
     packages=["yea"],
     install_requires=[
@@ -16,6 +16,7 @@ setup(
         "junit-xml",
         "PyYAML",
         "requests",
+        "typing_extensions",
     ],
     package_dir={"": "src"},
     entry_points={
