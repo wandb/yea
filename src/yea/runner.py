@@ -350,6 +350,20 @@ class TestRunner:
             print("  {:<{}s}: {}{}".format(tc.name, tlen, emoji, r))
             if r:
                 exit_code = 1
+
+        # timing info
+        print("\n\nTest durations (sec):")
+        print("---------------------")
+        timing_info = sorted(
+            [
+                (tc.elapsed_sec, tc.name)
+                for tc in self._results
+            ],
+            reverse=True,
+        )
+        for tc in timing_info:
+            print(f"  {tc[1]:<{tlen}s}: {tc[0]:.1f}")
+
         sys.exit(exit_code)
 
     def get_tests(self) -> List["ytest.YeaTest"]:
