@@ -326,7 +326,7 @@ class TestRunner:
         testdir = p.parent  # get the directory portion of path
         testdir.mkdir(parents=True, exist_ok=True)
         with open(p, "w") as f:
-            junit_xml.TestSuite.to_file(f, [ts], prettyprint=False, encoding="utf-8")
+            junit_xml.to_xml_report_file(f, [ts], prettyprint=False, encoding="utf-8")
 
     def finish(self) -> None:
         self.clean()
