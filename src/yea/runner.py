@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """test runner."""
 import ast
 import logging
@@ -139,12 +138,12 @@ class TestRunner:
                 # TODO: look for .yea, or look for .py with docstring
                 for tpath in path_dir.glob("*.py"):
                     if not all_tests and str(tpath) not in args_tests:
-                        logger.debug("skip fname {}".format(tpath))
+                        logger.debug(f"skip fname {tpath}")
                         continue
                     docstr = testspec.load_docstring(tpath)
                     spec = testspec.load_yaml_from_docstring(docstr)
                     if not spec:
-                        logger.debug("skip nospec {}".format(tpath))
+                        logger.debug(f"skip nospec {tpath}")
                         continue
 
                     if all_tests:
@@ -153,7 +152,7 @@ class TestRunner:
 
                     if not all_tests:
                         if (str(tpath) not in args_tests) or self._should_skip_test(spec):
-                            logger.debug("skip yea fname {}".format(tpath))
+                            logger.debug(f"skip yea fname {tpath}")
                             continue
 
                     tpaths.append(tpath)
@@ -183,7 +182,7 @@ class TestRunner:
                         if (py_fname not in args_tests and str(tpath) not in args_tests) or self._should_skip_test(
                             spec
                         ):
-                            logger.debug("skip yea fname {}".format(tpath))
+                            logger.debug(f"skip yea fname {tpath}")
                             continue
 
                     # add .yea or .py file
@@ -228,7 +227,7 @@ class TestRunner:
                 test_selected_to_run = all_tests or str(tpath) in args_tests
 
                 if id_not_in_map or not test_selected_to_run:
-                    logger.debug("skip yea fname: {}".format(tpath))
+                    logger.debug(f"skip yea fname: {tpath}")
                     continue
 
                 if all_tests:
@@ -278,11 +277,11 @@ class TestRunner:
         for k, v in actual.items():
             exp = expected.get(k)
             if exp != v:
-                result.append("BAD_{}({}:{}!={})".format(s, k, exp, v))
+                result.append(f"BAD_{s}({k}:{exp}!={v})")
         for k, v in expected.items():
             act = actual.get(k)
             if v != act:
-                result.append("BAD_{}({}:{}!={})".format(s, k, v, act))
+                result.append(f"BAD_{s}({k}:{v}!={act})")
 
     def _capture_result(self, t: "ytest.YeaTest") -> None:
         test_cfg = t._test_cfg
@@ -337,7 +336,7 @@ class TestRunner:
         print("--------")
         if not self._results:
             sys.exit(exit_code)
-        tlen = max([len(tc.name) for tc in self._results])
+        tlen = max(len(tc.name) for tc in self._results)
 
         use_emoji = not sys.platform.startswith("win")
         for tc in self._results:
@@ -352,13 +351,10 @@ class TestRunner:
                 exit_code = 1
 
         # timing info
-        print("\n\nTest durations (sec):")
+        print("\nTest durations (sec):")
         print("---------------------")
         timing_info = sorted(
-            [
-                (tc.elapsed_sec, tc.name)
-                for tc in self._results
-            ],
+            ((tc.elapsed_sec, tc.name) for tc in self._results),
             reverse=True,
         )
         for tc in timing_info:
