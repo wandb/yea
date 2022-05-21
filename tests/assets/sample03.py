@@ -2,7 +2,7 @@
 """Test a batch of import telemetry
 
 ---
-id: 0.sample.02
+id: 0.sample.03
 tag:
   skips:
     - platform: win
