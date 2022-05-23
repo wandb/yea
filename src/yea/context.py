@@ -43,7 +43,7 @@ class YeaContext:
             fmt="%(asctime)s %(levelname)-8s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-        logfname = "debug-{}-{}.log".format(self._ts, self._pid)
+        logfname = f"debug-{self._ts}-{self._pid}.log"
         lf = self._cachedir.joinpath(logfname)
         fh = logging.FileHandler(lf)
         fh.setFormatter(formatter)

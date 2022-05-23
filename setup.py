@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """yea setup."""
 
 from setuptools import setup
@@ -6,7 +5,7 @@ from setuptools import setup
 
 setup(
     name="yea",
-    version="0.7.17",
+    version="0.7.18",
     description="Test harness breaking the sound barrier",
     packages=["yea"],
     install_requires=[

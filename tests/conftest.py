@@ -1,6 +1,7 @@
 import argparse
 import sys
 from typing import Callable, List, Optional
+from unittest import mock
 
 
 if sys.version_info >= (3, 8):
@@ -40,7 +41,7 @@ def default_cli_args(
         "shard": shard,
         "suite": suite,
         "tests": tests,
-        "plugin_args": plugin_args
+        "plugin_args": plugin_args,
     }
 
 
@@ -50,3 +51,9 @@ def mocked_yea_context(request):
     args = CliArgs(argparse.Namespace(**cli_args))
 
     yield YeaContext(args=args)
+
+
+@pytest.fixture(autouse=True)
+def sys_exit():
+    with mock.patch("sys.exit", lambda x: print(f"SystemExit: {x}")):
+        yield

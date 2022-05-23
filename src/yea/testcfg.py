@@ -20,7 +20,7 @@ def schema_violations_from_proposed_config(config: Dict) -> List[str]:
 
 class TestlibConfig(dict):
     def __init__(self, d: Dict):
-        super(TestlibConfig, self).__init__(d)
+        super().__init__(d)
 
         if not isinstance(d, TestlibConfig):
             # ensure the data conform to the schema
