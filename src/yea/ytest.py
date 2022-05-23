@@ -279,7 +279,7 @@ class YeaTest:
         # dont mess with coverage_file (for now) if already set
         if self._yc._covfile is not None:
             return
-        covfname = ".coverage-{}-{}".format(self._yc._pid, self.test_id)
+        covfname = f".coverage-{self._yc._pid}-{self.test_id}"
         covfile = self._yc._cachedir.joinpath(covfname)
         os.environ["COVERAGE_FILE"] = str(covfile)
 

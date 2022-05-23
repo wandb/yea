@@ -8,7 +8,7 @@ import jsonschema  # type:ignore
 from jsonschema import Draft7Validator, validators
 
 testlib_config_jsonschema_fname = Path(__file__).parent / "schema-yea.json"
-with open(testlib_config_jsonschema_fname, "r") as f:
+with open(testlib_config_jsonschema_fname) as f:
     testlib_config_jsonschema = json.load(f)
 
 

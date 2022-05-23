@@ -78,7 +78,7 @@ def cli() -> None:
     args = parser.parse_args()
 
     if args.version:
-        print("Yea {}".format(__version__))
+        print(f"Yea {__version__}")
         sys.exit(0)
 
     if not args.action:
