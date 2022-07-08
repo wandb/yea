@@ -17,16 +17,28 @@ def _load_config(cfpath: Path) -> configparser.ConfigParser:
 
 def _find_config(root: bool = False) -> Optional[Path]:
     """Return path to the root yea config."""
+    possible_root_cf = None
     cwd = Path.cwd()
-    for p in cwd.parents:
+
+    # Walk directories all the way looking for config files
+    for p in [cwd] + list(cwd.parents):
         cf = Path(p, ".yearc")
         if cf.is_file():
             cp = _load_config(cf)
             if cp.getboolean("yea", "root", fallback=False) == root:
                 return cf
+            # save that this is the possible root config
+            possible_root_cf = cf
+
+        # if we are at the top of a git tree, dont search any farther
         gd = Path(p, ".git")
         if gd.is_dir():
-            return None
+            break
+
+    # if we walked all parents and didnt find a root, assume the lowest is root
+    if possible_root_cf:
+        return possible_root_cf
+
     return None
 
 
