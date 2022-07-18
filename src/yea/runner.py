@@ -1,18 +1,15 @@
 """test runner."""
-import ast
 import logging
 import os
 import pathlib
 import re
 import shutil
 import sys
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Generator, List, Optional, Union
 
 import junit_xml  # type: ignore
 
-from yea import context, testspec, ytest
-
-from .yeadoc import YeadocSnippet, load_tests_from_docstring
+from yea import context, ytest
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +35,6 @@ class TestRunner:
         self._test_files: List[str] = []
         self._results: List[junit_xml.TestCase] = []
         self._test_list: List["ytest.YeaTest"] = []
-        self._populate()
 
     def prepare(self) -> None:
         if self._yc._cfg._coverage_run_in_process:
@@ -50,7 +46,8 @@ class TestRunner:
     def clean(self) -> None:
         os.environ.pop("YEA_RUN_COVERAGE", None)
         if self._tmpdir.exists():
-            shutil.rmtree(self._tmpdir)
+            pass
+            # shutil.rmtree(self._tmpdir)
 
     def _get_args_list(self) -> Optional[List[str]]:
         # TODO: clean up args parsing
@@ -82,182 +79,6 @@ class TestRunner:
                 for d in dirs:
                     path_dir = pathlib.Path(self._cfg.test_root, root, d)
                     yield path_dir
-
-    def _get_platform(self) -> str:
-        if self._args.platform:
-            return self._args.platform
-        p = sys.platform
-        if p.startswith("win"):
-            p = "win"
-        elif p == "darwin":
-            p = "mac"
-        return p
-
-    def _should_skip_test(self, spec: Any) -> bool:
-        my_platform = self._get_platform()
-        suite = spec.get("tag", {}).get("suite", "main")
-        shards = spec.get("tag", {}).get("shards", [])
-        shard = spec.get("tag", {}).get("shard", "default")
-        platforms = spec.get("tag", {}).get("platforms", [])
-        shards.append(shard)
-        skip_all = spec.get("tag", {}).get("skip", False)
-        skips = spec.get("tag", {}).get("skips", [])
-        if skip_all:
-            return True
-        for skip in skips:
-            skip_platform = skip.get("platform")
-            # right now the only specific skip is platform, if not specified skip all
-            if skip_platform is None:
-                return True
-            if skip_platform and my_platform == skip_platform:
-                return True
-        if self._args.suite and self._args.suite != suite:
-            return True
-        if self._args.shard and self._args.shard not in shards:
-            return True
-        if platforms and my_platform not in platforms:
-            return True
-        # if we specify platform, skip any platform that doesn't match
-        if self._args.platform and my_platform not in platforms:
-            return True
-        return False
-
-    def _populate(self) -> None:
-        tpaths = []
-
-        args_tests = self._get_args_list() or []
-
-        all_tests = False
-        if self._args.action == "list" and not self._args.tests:
-            all_tests = True
-        if self._args.action == "run" and self._args.all:
-            all_tests = True
-
-        if not self._args.docs_only:
-            for path_dir in self._get_dirs():
-                # TODO: look for .yea, or look for .py with docstring
-                for tpath in path_dir.glob("*.py"):
-                    if not all_tests and str(tpath) not in args_tests:
-                        logger.debug(f"skip fname {tpath}")
-                        continue
-                    docstr = testspec.load_docstring(tpath)
-                    spec = testspec.load_yaml_from_docstring(docstr)
-                    if not spec:
-                        logger.debug(f"skip nospec {tpath}")
-                        continue
-
-                    if all_tests:
-                        if self._should_skip_test(spec):
-                            continue
-
-                    if not all_tests:
-                        if (str(tpath) not in args_tests) or self._should_skip_test(spec):
-                            logger.debug(f"skip yea fname {tpath}")
-                            continue
-
-                    tpaths.append(tpath)
-
-                for tpath in path_dir.glob("*.yea"):
-                    # TODO: parse yea file looking for path info
-                    spec = testspec.load_yaml_from_file(tpath)
-
-                    # if program is specified, keep track of yea file
-                    py_fname = spec.get("command", {}).get("program")
-                    if py_fname:
-                        # hydrate to full path, take base from tpath
-                        py_fname = os.path.join(tpath.parent, py_fname)
-                        t_fname = tpath
-                    else:
-                        py_fname = str(tpath)[:-4] + ".py"
-                        t_fname = py_fname
-
-                    if not os.path.exists(py_fname):
-                        continue
-
-                    if all_tests:
-                        if self._should_skip_test(spec):
-                            continue
-
-                    if not all_tests:
-                        if (py_fname not in args_tests and str(tpath) not in args_tests) or self._should_skip_test(
-                            spec
-                        ):
-                            logger.debug(f"skip yea fname {tpath}")
-                            continue
-
-                    # add .yea or .py file
-                    tpaths.append(pathlib.Path(t_fname))
-
-        # pick up yea tests from docstrings
-        id_test_map: Dict[str, YeadocSnippet] = {}
-        for path_dir in self._get_dirs():
-            # build up the list of tests that can be run by parsing docstrings
-            for tpath in path_dir.glob("*.py"):
-
-                # parse the test file using ast
-                with open(tpath, encoding="utf8") as f:
-                    mod = ast.parse(f.read())
-
-                function_definitions = [node for node in mod.body if isinstance(node, ast.FunctionDef)]
-                for func in function_definitions:
-                    docstr = ast.get_docstring(func) or ""
-                    snippets = load_tests_from_docstring(docstr)
-                    for s in snippets:
-                        id_test_map[s.id] = s
-
-                classes = [node for node in mod.body if isinstance(node, ast.ClassDef)]
-                for class_ in classes:
-                    methods = [node for node in class_.body if isinstance(node, ast.FunctionDef)]
-                    for func in methods:
-                        docstr = ast.get_docstring(func) or ""
-                        snippets = load_tests_from_docstring(docstr)
-                        for s in snippets:
-                            id_test_map[s.id] = s
-                    class_docstr = ast.get_docstring(class_) or ""
-                    if class_docstr is not None:
-                        snippets = load_tests_from_docstring(class_docstr)
-                        for s in snippets:
-                            id_test_map[s.id] = s
-
-        for path_dir in self._get_dirs():
-            for tpath in path_dir.glob("*.yea"):
-                # TODO: parse yea file looking for path info
-                spec = testspec.load_yaml_from_file(tpath)
-                id_not_in_map = spec.get("id", None) not in id_test_map
-                test_selected_to_run = all_tests or str(tpath) in args_tests
-
-                if id_not_in_map or not test_selected_to_run:
-                    logger.debug(f"skip yea fname: {tpath}")
-                    continue
-
-                if all_tests:
-                    if spec.get("tag", {}).get("skip", False):
-                        continue
-                    suite = spec.get("tag", {}).get("suite", "main")
-                    shard = spec.get("tag", {}).get("shard", "default")
-                    if self._args.suite and self._args.suite != suite:
-                        continue
-                    if self._args.shard and self._args.shard != shard:
-                        continue
-
-                # write test and spec to tempfiles
-                shutil.copy(tpath, self._tmpdir)
-                t_fname = self._tmpdir / tpath.name
-                py_fname = str(t_fname)[:-4] + ".py"
-                with open(py_fname, "w") as f:
-                    f.write(id_test_map[spec["id"]].code)
-
-                # add .yea or .py file
-                tpaths.append(pathlib.Path(py_fname))
-
-        tlist = []
-        for tname in tpaths:
-            t = ytest.YeaTest(tname=tname, yc=self._yc)
-            test_perms = t.get_permutations()
-            tlist.extend(test_perms)
-
-        tlist.sort(key=alphanum_sort)
-        self._test_list = tlist
 
     def _runall(self) -> None:
         for t in self._test_list:
@@ -302,11 +123,11 @@ class TestRunner:
             tc.add_failure_info(message=result_str)
         self._results.append(tc)
 
-    def run(self) -> None:
+    def run(self, tests: List["ytest.YeaTest"]) -> None:
+        self._test_list = tests
         try:
-            self._populate()
             # inform so we only start monitors needed
-            self._yc.monitors_inform(self.get_tests())
+            self._yc.monitors_inform(tests)
             self._yc.monitors_init()
             self._yc.monitors_start()
             self._runall()
@@ -364,3 +185,23 @@ class TestRunner:
 
     def get_tests(self) -> List["ytest.YeaTest"]:
         return self._test_list
+
+    def yeadoc_prepare(self, tests: List["ytest.YeaTest"]) -> None:
+        """If we have yeadoc tests, copy snippets to actual files."""
+        for tst in tests:
+            if not tst.is_yeadoc:
+                continue
+            tpath = tst._tname
+
+            # write test and spec to tempfiles
+            shutil.copy(tpath, self._tmpdir)
+            t_fname = self._tmpdir / tpath.name
+            py_fname = str(t_fname)[:-4] + ".py"
+
+            assert tst._registry
+            snippet = tst._registry._yeadoc_dict[tst.yeadoc_id]
+
+            with open(py_fname, "w") as f:
+                f.write(snippet.code)
+
+            tst._change_yeadoc_path(pathlib.Path(py_fname))

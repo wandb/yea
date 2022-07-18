@@ -4,7 +4,7 @@ import argparse
 import sys
 from typing import Callable, List, Optional
 
-from yea import __version__, context, runner
+from yea import __version__, context, registry, runner, ytest
 
 
 if sys.version_info >= (3, 8):
@@ -20,9 +20,9 @@ class CliArgs:
 
     def __init__(self, args: argparse.Namespace):
         self.action: Literal["run", "list", "r", "l"] = args.action
-        self.all: bool = args.all if hasattr(args, "all") else False
+        self.all: bool = args.all
         self.debug: bool = args.debug
-        self.docs_only: bool = args.docs_only
+        self.yeadoc: bool = args.yeadoc
         self.dryrun: bool = args.dryrun
         self.func: Callable = args.func
         self.live: bool = args.live
@@ -31,50 +31,63 @@ class CliArgs:
         self.suite: Optional[str] = args.suite
         self.tests: Optional[List[str]] = args.tests
         self.plugin_args: list = args.plugin_args or []
+        self.strict: bool = args.strict
+
+
+def get_tests(yc: "context.YeaContext") -> List["ytest.YeaTest"]:
+    test_reg = registry.Registry(yc=yc)
+    test_reg.probe(all_tests=yc._args.all, tests=yc._args.tests)
+    tests = test_reg.get_tests()
+    return tests
 
 
 def cli_list(yc: "context.YeaContext") -> None:
-    print("Tests:")
-    yc._args.action = "list"
-    tr = runner.TestRunner(yc=yc)
-    tests = tr.get_tests()
+    tests = get_tests(yc)
     test_ids = [len(t.test_id) for t in tests if t.test_id is not None]
     if None in test_ids:
         raise ValueError("Test ids must be set.")
     tlen = max(test_ids) if test_ids else 0
+
+    print("Tests:")
     for t in tests:
         print("  {:<{}s}: {}".format(t.test_id, tlen, t.name))
-    tr.clean()
 
 
 def cli_run(yc: "context.YeaContext") -> None:
-    yc._args.action = "run"
+    tests = get_tests(yc)
     tr = runner.TestRunner(yc=yc)
-    tr.run()
+
+    if yc._args.yeadoc:
+        tr.yeadoc_prepare(tests)
+
+    tr.run(tests)
 
 
 def cli() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
 
     subparsers = parser.add_subparsers(dest="action", title="action", description="Action to perform")
     parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
-    parser.add_argument("--docs-only", help="Read tests from docstrings only", action="store_true")
+    parser.add_argument("--yeadoc", help="scan for docstring tests", action="store_true")
     parser.add_argument("--dryrun", action="store_true", help="Do not do anything")
     parser.add_argument("--live", action="store_true", help="Run against real server")
+    parser.add_argument("--strict", action="store_true", help="Fail if something happens")
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
     parser.add_argument("--platform", help="Specify testing platform")
     parser.add_argument("-p", "--plugin-args", action="append", help="Add plugin args")
     parser.add_argument("--version", help="Print version and exit", action="store_true")
 
-    parse_list = subparsers.add_parser("list", aliases=["l"])
-    parse_list.set_defaults(func=cli_list)
+    parse_list = subparsers.add_parser("list", aliases=["l"], allow_abbrev=False)
+    parse_list.add_argument("-a", "--all", action="store_true", help="List all")
     parse_list.add_argument("tests", nargs="*")
+    parse_list.set_defaults(func=cli_list)
 
-    parse_run = subparsers.add_parser("run", aliases=["r"])
+    parse_run = subparsers.add_parser("run", aliases=["r"], allow_abbrev=False)
     parse_run.add_argument("-a", "--all", action="store_true", help="Run all")
     parse_run.add_argument("tests", nargs="*")
     parse_run.set_defaults(func=cli_run)
+
     args = parser.parse_args()
 
     if args.version:

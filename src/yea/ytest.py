@@ -6,6 +6,7 @@ import itertools
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import time
@@ -13,7 +14,10 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 
-from yea import context, testcfg, testspec
+from yea import context, registry, testcfg, testspec
+
+
+RE_TESTNAME = re.compile(r"t(?P<id>\d+)_(?P<name>[a-zA-z]\w+)$")
 
 
 def run_command(
@@ -120,9 +124,52 @@ class YeaTest:
         self._time_end: Optional[Union[int, float]] = None
         self._permute_groups: Optional[List[Any]] = None
         self._permute_items: Optional[Tuple[Any, ...]] = None
+        self._yearc_list: List[configparser.ConfigParser] = []
+        self._registry: Optional["registry.Registry"] = None
 
     def __str__(self) -> str:
         return f"{self._tname}"
+
+    def _add_yearc_list(self, yearc_list: List) -> None:
+        self._yearc_list = yearc_list
+
+    def _add_registry(self, r: "registry.Registry") -> None:
+        self._registry = r
+
+    def _change_yeadoc_path(self, path: pathlib.Path) -> None:
+        self._tname = path
+
+    @property
+    def skip(self) -> bool:
+        self._load()
+        spec = self._test_cfg
+        my_platform = self._yc._get_platform()
+        suite = spec.get("tag", {}).get("suite", "main")
+        shards = spec.get("tag", {}).get("shards", [])
+        shard = spec.get("tag", {}).get("shard", "default")
+        platforms = spec.get("tag", {}).get("platforms", [])
+        shards.append(shard)
+        skip_all = spec.get("tag", {}).get("skip", False)
+        skips = spec.get("tag", {}).get("skips", [])
+        if skip_all:
+            return True
+        for skip in skips:
+            skip_platform = skip.get("platform")
+            # right now the only specific skip is platform, if not specified skip all
+            if skip_platform is None:
+                return True
+            if skip_platform and my_platform == skip_platform:
+                return True
+        if self._args.suite and self._args.suite != suite:
+            return True
+        if self._args.shard and self._args.shard not in shards:
+            return True
+        if platforms and my_platform not in platforms:
+            return True
+        # if we specify platform, skip any platform that doesn't match
+        if self._args.platform and my_platform not in platforms:
+            return True
+        return False
 
     def _depend_files(self) -> bool:
         err = False
@@ -184,6 +231,22 @@ class YeaTest:
         err = err or self._depend_install()
 
         return err
+
+    @property
+    def is_yeadoc(self) -> bool:
+        for cf in self._yearc_list:
+            # for now, just yeadoc specifier
+            is_yeadoc = cf.getboolean("yea", "yeadoc", fallback=False)
+            if is_yeadoc:
+                return True
+        return False
+
+    @property
+    def yeadoc_id(self) -> str:
+        self._load()
+        # yeadoc must have id for now
+        test_id: str = self._test_cfg["id"]
+        return test_id
 
     def _run(self) -> None:
         tname = self._tname
@@ -373,7 +436,59 @@ class YeaTest:
 
     @property
     def test_id(self) -> Optional[str]:
-        tid = str(self._test_cfg.get("id", "")) if self._test_cfg else None
+        # tid = str(self._test_cfg.get("id", "")) if self._test_cfg else None
+        root = self._yc._cfg._cfroot
+        leaf_id = ""
+
+        # parse leaf id from filename
+        m = RE_TESTNAME.match(self._tname.stem)
+        if m:
+            leaf_id = m["id"]
+
+        # or parse leaf id from test_cfg
+        if not leaf_id:
+            test_cfg_id = self._test_cfg.get("id", "")
+            # ignore old form ids
+            if "." not in test_cfg_id:
+                leaf_id = test_cfg_id
+
+        # fallback use filename stem
+        if not leaf_id:
+            leaf_id = self._tname.stem
+
+        parts = [leaf_id]
+
+        # walk until root or base, picking up ids
+        # TODO: use registry yearc probed cache, self._yearc_list
+        for p in self._tname.parents:
+            base = False
+            part_id = ""
+            if p == root:
+                break
+
+            # find part_id from dirname
+            m = RE_TESTNAME.match(p.stem)
+            if m:
+                part_id = m["id"]
+
+            # always parse yearc
+            yearc = p / ".yearc"
+            if yearc.exists():
+                cf = configparser.ConfigParser()
+                cf.read(yearc)
+                # do not walk past the base
+                base = cf.getboolean("yea", "base", fallback=False)
+                # use part_id from yearc
+                if not part_id:
+                    part_id = cf.get("yea", "id", fallback="")
+
+            if not part_id:
+                part_id = p.stem
+            parts.insert(0, part_id)
+            if base:
+                break
+
+        tid = ".".join(parts)
         return tid
 
     @property
