@@ -90,6 +90,8 @@ class YeaContext:
     def test_prep(self, yt: "ytest.YeaTest") -> None:
         width = _get_width() or 60
         print("-" * width)
+        print(f"Test: {yt.test_id}")
+        print("-" * width)
         # wandb_dir_safe_cleanup()
         self._plugs.test_prep(yt)
 
@@ -98,6 +100,7 @@ class YeaContext:
         self._plugs.test_done(yt)
         width = _get_width() or 60
         print("-" * width)
+        print()
 
     def test_check(self, yt: "ytest.YeaTest") -> list:
         # ctx = self._backend.get_state()
