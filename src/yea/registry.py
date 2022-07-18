@@ -120,7 +120,7 @@ class Registry:
             # yeadoc does not need a py filename, but we should enforce that we have
             # found a snippet from _probe_yeadoc
 
-            # for now, id is requred for yeadoc
+            # for now, id is required for yeadoc
             test_id: str = spec["id"]
 
             # add so that _probe_yeadoc_check can validate it was covered
