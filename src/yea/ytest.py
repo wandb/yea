@@ -126,6 +126,7 @@ class YeaTest:
         self._permute_items: Optional[Tuple[Any, ...]] = None
         self._yearc_list: List[configparser.ConfigParser] = []
         self._registry: Optional["registry.Registry"] = None
+        self._permute_id: str = ""
 
     def __str__(self) -> str:
         return f"{self._tname}"
@@ -420,9 +421,7 @@ class YeaTest:
             t._permute_groups = gnames
             t._permute_items = it
             tpname = f"{tnum}-{'-'.join(map(str, it))}"
-            tid = t._test_cfg.get("id")
-            if tid:
-                t._test_cfg["id"] = f"{tid}.{tpname}"
+            t._permute_id = tpname
             r.append(t)
         return r
 
@@ -487,6 +486,10 @@ class YeaTest:
             parts.insert(0, part_id)
             if base:
                 break
+
+        # add a part for permutations
+        if self._permute_id:
+            parts.append(self._permute_id)
 
         tid = ".".join(parts)
         return tid
