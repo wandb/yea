@@ -46,8 +46,7 @@ class TestRunner:
     def clean(self) -> None:
         os.environ.pop("YEA_RUN_COVERAGE", None)
         if self._tmpdir.exists():
-            pass
-            # shutil.rmtree(self._tmpdir)
+            shutil.rmtree(self._tmpdir)
 
     def _get_args_list(self) -> Optional[List[str]]:
         # TODO: clean up args parsing

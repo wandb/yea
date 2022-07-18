@@ -88,7 +88,7 @@ class YeaContext:
         self._plugs.monitors_reset()
 
     def test_prep(self, yt: "ytest.YeaTest") -> None:
-        width = _get_width() or 60
+        width = _get_width()
         print("-" * width)
         print(f"Test: {yt.test_id}")
         print("-" * width)
@@ -98,7 +98,7 @@ class YeaContext:
     def test_done(self, yt: "ytest.YeaTest") -> None:
         # wandb_dir_safe_cleanup()
         self._plugs.test_done(yt)
-        width = _get_width() or 60
+        width = _get_width()
         print("-" * width)
         print()
 

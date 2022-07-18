@@ -435,7 +435,6 @@ class YeaTest:
 
     @property
     def test_id(self) -> Optional[str]:
-        # tid = str(self._test_cfg.get("id", "")) if self._test_cfg else None
         root = self._yc._cfg._cfroot
         leaf_id = ""
 

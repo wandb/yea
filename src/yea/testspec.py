@@ -44,7 +44,6 @@ def load_yaml_from_str(yaml_string: str) -> Dict[str, Any]:
     try:
         data = dict(yaml.load(yaml_string, Loader=yaml.SafeLoader))
     except yaml.scanner.ScannerError:
-        # print("WARNING: Unable to parse yaml")
         data = {}
     return data
 
