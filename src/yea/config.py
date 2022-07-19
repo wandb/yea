@@ -1,10 +1,14 @@
 """Config class."""
 
 import configparser
+import logging
 import os
 import re
 from pathlib import Path
 from typing import List, Optional
+
+
+logger = logging.getLogger(__name__)
 
 
 def _load_config(cfpath: Path) -> configparser.ConfigParser:
@@ -44,7 +48,8 @@ def _find_config(root: bool = False) -> Optional[Path]:
 
 class Config:
     _cfroot: Path
-    _test_dirs: List
+    _test_dirs: List[str]
+    _yeadoc_dirs: List[str]
     _results_file: Optional[str]
 
     def __init__(self) -> None:
@@ -53,6 +58,7 @@ class Config:
         self._coverage_source_env: Optional[str] = None
         self._coverage_run_in_process: bool = True
         self._test_dirs = []
+        self._yeadoc_dirs = []
         self._results_file = None
         found = _find_config(root=True)
         if found:
@@ -70,6 +76,10 @@ class Config:
         test_list = re.findall(r"[\S]+", test_paths)
         self._test_dirs = test_list
 
+        yeadoc_paths = ydict.get("yeadoc_paths", "")
+        yeadoc_list = re.findall(r"[\S]+", yeadoc_paths)
+        self._yeadoc_dirs = yeadoc_list
+
         self._coverage_config_template = ydict.get("coverage_config_template", "")
         self._coverage_source = ydict.get("coverage_source")
         # TODO: clean up how this works, user could already have an absolute path
@@ -86,6 +96,10 @@ class Config:
     @property
     def test_dirs(self) -> List[str]:
         return self._test_dirs
+
+    @property
+    def yeadoc_dirs(self) -> List[str]:
+        return self._yeadoc_dirs
 
     @property
     def test_root(self) -> Optional[Path]:

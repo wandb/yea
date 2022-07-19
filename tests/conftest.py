@@ -19,7 +19,7 @@ def default_cli_args(
     action: Literal["run", "r", "list", "l"],
     all: bool = False,
     debug: bool = False,
-    docs_only: bool = False,
+    yeadoc: bool = False,
     dryrun: bool = False,
     func: Optional[Callable] = None,
     live: Optional[bool] = False,
@@ -28,12 +28,13 @@ def default_cli_args(
     suite: Optional[str] = None,
     tests: Optional[List[str]] = None,
     plugin_args: Optional[list] = None,
+    strict: Optional[bool] = False,
 ) -> dict:
     return {
         "action": action,
         "all": all,
         "debug": debug,
-        "docs_only": docs_only,
+        "yeadoc": yeadoc,
         "dryrun": dryrun,
         "func": func if func is not None else cli_run if action in ("run", "r") else cli_list,
         "live": live,
@@ -42,6 +43,7 @@ def default_cli_args(
         "suite": suite,
         "tests": tests,
         "plugin_args": plugin_args,
+        "strict": strict,
     }
 
 

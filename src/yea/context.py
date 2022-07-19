@@ -3,10 +3,17 @@
 import datetime
 import logging
 import os
+import shutil
+import sys
 from pathlib import Path
 from typing import Optional
 
 from yea import cli, config, plugins, ytest
+
+
+def _get_width() -> int:
+    term = shutil.get_terminal_size(fallback=(60, 12))
+    return term[0]
 
 
 class YeaContext:
@@ -22,6 +29,7 @@ class YeaContext:
         self._setup_cachedir()
         self._setup_logging()
         self._plugs: plugins.Plugins = plugins.Plugins(yc=self)
+        self._platform = self._get_platform()
 
     def _setup_env(self) -> None:
         self._covfile = os.environ.get("COVERAGE_FILE")
@@ -51,6 +59,16 @@ class YeaContext:
         logger.addHandler(fh)
         logger.info("started")
 
+    def _get_platform(self) -> str:
+        if self._args.platform:
+            return self._args.platform
+        p = sys.platform
+        if p.startswith("win"):
+            p = "win"
+        elif p == "darwin":
+            p = "mac"
+        return p
+
     def is_live(self) -> bool:
         return self._args.live
 
@@ -70,12 +88,19 @@ class YeaContext:
         self._plugs.monitors_reset()
 
     def test_prep(self, yt: "ytest.YeaTest") -> None:
+        width = _get_width()
+        print("-" * width)
+        print(f"Test: {yt.test_id}")
+        print("-" * width)
         # wandb_dir_safe_cleanup()
         self._plugs.test_prep(yt)
 
     def test_done(self, yt: "ytest.YeaTest") -> None:
         # wandb_dir_safe_cleanup()
         self._plugs.test_done(yt)
+        width = _get_width()
+        print("-" * width)
+        print()
 
     def test_check(self, yt: "ytest.YeaTest") -> list:
         # ctx = self._backend.get_state()
