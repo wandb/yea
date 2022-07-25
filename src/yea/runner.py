@@ -107,9 +107,6 @@ class TestRunner:
         test_cfg = t._test_cfg
         if not test_cfg:
             return
-        if self._yc.is_live():
-            # we are live
-            return
         result = self._yc.test_check(t)
         # print("GOTRES", result)
         result_str = ",".join(result)
