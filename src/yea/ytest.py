@@ -118,6 +118,7 @@ class YeaTest:
         self._yc = yc
         self._args = yc._args
         self._retcode: int
+        self._time: float
         self._test_cfg: testcfg.TestlibConfig
         self._covrc: Optional[pathlib.Path] = None
         self._time_start: Optional[Union[int, float]] = None
@@ -127,6 +128,7 @@ class YeaTest:
         self._yearc_list: List[configparser.ConfigParser] = []
         self._registry: Optional["registry.Registry"] = None
         self._permute_id: str = ""
+        self._profile_file: Optional[pathlib.Path] = None
 
     def __str__(self) -> str:
         return f"{self._tname}"
@@ -279,6 +281,21 @@ class YeaTest:
             env["YEA_PARAM_NAMES"] = ",".join(self._permute_groups)
             env["YEA_PARAM_VALUES"] = ",".join(map(str, self._permute_items))
 
+        # pass profile config as env vars to be loaded by yea.setup() in test
+        # NOTE: yea.setup() will not be required in the future (hopefully)
+        profile: List[Union[str, Dict[str, Dict[str, Any]]]] = self._test_cfg.get("profile", [])
+        if profile:
+            prof_vars: str = ",".join(map(lambda p: next(iter(p)) if isinstance(p, dict) else p, profile))
+            prof_vals: List[Dict[str, Any]] = list(
+                map(lambda p: next(iter(p.items()))[1] if isinstance(p, dict) else {}, profile)
+            )
+            env["YEA_PROFILE_VARS"] = prof_vars
+            env["YEA_PROFILE_VALS"] = json.dumps(prof_vals)
+            prof_fname = f".profile-{self._yc._pid}-{self.test_id}"
+            prof_file = self._yc._cachedir.joinpath(prof_fname)
+            env["YEA_PROFILE_FILE"] = str(prof_file)
+            self._profile_file = prof_file
+
         plugins = self._test_cfg.get("plugin", [])
         params = (
             {k: v for (k, v) in zip(self._permute_groups, self._permute_items)}
@@ -311,8 +328,12 @@ class YeaTest:
                     env[f"YEA_PLUGIN_{penv}_VALUES"] = json.dumps(pvalues)
             env["YEA_PLUGINS"] = ",".join(plugins)
 
+        start_time = time.monotonic()
         exit_code = run_command(cmd_list, env=env, timeout=timeout)
+        end_time = time.monotonic()
+
         self._retcode = exit_code
+        self._time = end_time - start_time
 
     def _load(self) -> None:
         spec = None
