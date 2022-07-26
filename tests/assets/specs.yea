@@ -43,3 +43,8 @@ parametrize:
         - fork
         - spawn
         - forkserver
+profile:
+  - :wandb:import
+  - :wandb:init
+  - :wandb:log
+  - :wandb:finish

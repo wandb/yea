@@ -1,7 +1,8 @@
 import importlib
+import json
 import multiprocessing as mp
 import os
-from typing import Dict
+from typing import Dict, Optional, Tuple
 
 
 def _setup_params() -> Dict[str, str]:
@@ -13,6 +14,21 @@ def _setup_params() -> Dict[str, str]:
     values = env_values.split(",")
     params = dict(zip(names, values))
     return params
+
+
+def _setup_profile() -> Optional[Tuple[str, Dict[str, str]]]:
+    prof_file = os.environ.get("YEA_PROFILE_FILE")
+    prof_vars = os.environ.get("YEA_PROFILE_VARS")
+    prof_vals = os.environ.get("YEA_PROFILE_VALS")
+    if any(v is None for v in (prof_file, prof_vals, prof_vars)):
+        return None
+    # make linter happy
+    assert prof_file and prof_vars and prof_vals
+
+    p_vars = prof_vars.split(",")
+    p_vals = json.loads(prof_vals)
+    params = dict(zip(p_vars, p_vals))
+    return (prof_file, params)
 
 
 def setup_mp(params: Dict[str, str]) -> None:

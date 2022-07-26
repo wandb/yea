@@ -70,6 +70,12 @@
                 "type": "object"
             }
         },
+        "profile": {
+            "type": "array",
+            "items": {
+                "type": ["object", "string"]
+            }
+        },
         "var": {
             "type": "array",
             "items": {
