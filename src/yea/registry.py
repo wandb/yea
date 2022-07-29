@@ -281,7 +281,7 @@ class Registry:
         for tname in self._registry:
             tname = tname.resolve()
             t = ytest.YeaTest(tname=tname, yc=self._yc)
-            if t.skip:
+            if t.skip and not self._yc._args.noskip:
                 continue
             test_perms = t.get_permutations()
 
