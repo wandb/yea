@@ -26,6 +26,7 @@ class CliArgs:
         self.dryrun: bool = args.dryrun
         self.func: Callable = args.func
         self.live: bool = args.live
+        self.noskip: bool = args.noskip
         self.platform: Optional[str] = args.platform
         self.shard: Optional[str] = args.shard
         self.suite: Optional[str] = args.suite
@@ -75,6 +76,7 @@ def cli() -> None:
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
     parser.add_argument("--platform", help="Specify testing platform")
+    parser.add_argument("--noskip", action="store_true", help="Do not skip any tests")
     parser.add_argument("-p", "--plugin-args", action="append", help="Add plugin args")
     parser.add_argument("--version", help="Print version and exit", action="store_true")
 
