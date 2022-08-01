@@ -20,23 +20,33 @@ from yea import context, registry, testcfg, testspec
 RE_TESTNAME = re.compile(r"t(?P<id>\d+)_(?P<name>[a-zA-z]\w+)$")
 
 
+def _shutdown_process(p: subprocess.Popen) -> None:
+    p.kill()
+    try:
+        p.communicate(timeout=30)
+    except subprocess.TimeoutExpired:
+        print("ERROR: double timeout")
+        sys.exit(1)
+
+
 def run_command(
     cmd_list: List[str],
     timeout: int = 300,
     env: Mapping = os.environ,
 ) -> int:
     print("INFO: RUNNING=", cmd_list)
-    p = subprocess.Popen(cmd_list, env=env)
+
+    # start the test process as its own process group in case it matters
+    kwargs: Dict[str, Any] = dict(close_fds=True, start_new_session=True)
+    p = subprocess.Popen(cmd_list, env=env, **kwargs)
     try:
         p.communicate(timeout=timeout)
+    except KeyboardInterrupt:
+        print("ERROR: KEYBOARD INTERRUPT")
+        _shutdown_process(p)
     except subprocess.TimeoutExpired:
         print("ERROR: TIMEOUT")
-        p.kill()
-        try:
-            p.communicate(timeout=30)
-        except subprocess.TimeoutExpired:
-            print("ERROR: double timeout")
-            sys.exit(1)
+        _shutdown_process(p)
     print("INFO: exit=", p.returncode)
     return p.returncode
 
