@@ -104,3 +104,12 @@ class Config:
     @property
     def test_root(self) -> Optional[Path]:
         return self._cfroot
+
+    @property
+    def durations_path(self) -> Optional[Path]:
+        path = self.test_root
+        if path is None:
+            return None
+        # TODO: support specifying in config eventually
+        path = Path.joinpath(path, ".yea_durations")
+        return path

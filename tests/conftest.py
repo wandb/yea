@@ -30,6 +30,9 @@ def default_cli_args(
     plugin_args: Optional[list] = None,
     strict: Optional[bool] = False,
     noskip: Optional[bool] = False,
+    splits: Optional[int] = None,
+    group: Optional[int] = None,
+    store_durations: bool = False,
 ) -> dict:
     return {
         "action": action,
@@ -46,6 +49,9 @@ def default_cli_args(
         "plugin_args": plugin_args,
         "strict": strict,
         "noskip": noskip,
+        "splits": splits,
+        "group": group,
+        "store_durations": store_durations,
     }
 
 

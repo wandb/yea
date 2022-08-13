@@ -261,6 +261,12 @@ class YeaTest:
         test_id: str = self._test_cfg["id"]
         return test_id
 
+    @property
+    def nodeid(self) -> str:
+        # added for compatibility with pytest-split
+        assert self.test_id
+        return self.test_id
+
     def _run(self) -> None:
         tname = self._tname
         print("INFO: RUN=", tname)

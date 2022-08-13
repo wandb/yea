@@ -33,6 +33,9 @@ class CliArgs:
         self.tests: Optional[List[str]] = args.tests
         self.plugin_args: list = args.plugin_args or []
         self.strict: bool = args.strict
+        self.splits: Optional[int] = args.splits
+        self.group: Optional[int] = args.group
+        self.store_durations: bool = args.store_durations
 
 
 def get_tests(yc: "context.YeaContext") -> List["ytest.YeaTest"]:
@@ -79,6 +82,10 @@ def cli() -> None:
     parser.add_argument("--noskip", action="store_true", help="Do not skip any tests")
     parser.add_argument("-p", "--plugin-args", action="append", help="Add plugin args")
     parser.add_argument("--version", help="Print version and exit", action="store_true")
+    # for split tests (follows pytest-split conventions)
+    parser.add_argument("--splits", type=int, help="Number of split workers")
+    parser.add_argument("--group", type=int, help="Which split worker are we")
+    parser.add_argument("--store-durations", action="store_true", help="Store split worker test info")
 
     parse_list = subparsers.add_parser("list", aliases=["l"], allow_abbrev=False)
     parse_list.add_argument("-a", "--all", action="store_true", help="List all")
