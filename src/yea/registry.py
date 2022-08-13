@@ -276,6 +276,15 @@ class Registry:
         if self._yc._args.yeadoc and all_tests:
             self._probe_yeadoc_check()
 
+    def filter_splits(self, tlist: List["ytest.YeaTest"]) -> List["ytest.YeaTest"]:
+        splits = self._yc._args.splits
+        group = self._yc._args.group
+        durations_path = self._cfg.durations_path
+        if not splits or not group or not durations_path:
+            return tlist
+
+        return tlist
+
     def get_tests(self, include_skip: bool = False) -> List["ytest.YeaTest"]:
         tlist: List["ytest.YeaTest"] = []
         for tname in self._registry:
@@ -293,5 +302,6 @@ class Registry:
 
             tlist.extend(test_perms)
 
+        tlist = self.filter_splits(tlist)
         tlist.sort(key=alphanum_sort)
         return tlist
