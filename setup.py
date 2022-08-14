@@ -14,6 +14,7 @@ setup(
         "jsonschema",
         "PyYAML",
         "requests",
+        "six",
         "typing_extensions",
     ],
     package_dir={"": "src"},
