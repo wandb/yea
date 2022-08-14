@@ -12,7 +12,6 @@ setup(
         "coverage",
         "importlib-metadata>=3.0.0",
         "jsonschema",
-        "junit-xml",
         "PyYAML",
         "requests",
         "typing_extensions",

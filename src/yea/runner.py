@@ -7,12 +7,11 @@ import shutil
 import sys
 from typing import Any, Generator, List, Optional, Union
 
-import junit_xml  # type: ignore
-
-from yea import context, ytest
+from yea import context, util, ytest
 
 
 logger = logging.getLogger(__name__)
+junit_xml = util.vendor_import("wandb_junit_xml")
 
 
 def convert(text: str) -> Union[int, str]:
@@ -33,7 +32,8 @@ class TestRunner:
         self.prepare()
         self._args = yc._args
         self._test_files: List[str] = []
-        self._results: List[junit_xml.TestCase] = []
+        # self._results: List[junit_xml.TestCase] = []
+        self._results: List = []
         self._test_list: List["ytest.YeaTest"] = []
 
     def prepare(self) -> None:
