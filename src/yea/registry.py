@@ -2,6 +2,7 @@
 
 import ast
 import configparser
+import json
 import logging
 import os
 import pathlib
@@ -9,7 +10,7 @@ import re
 import sys
 from typing import Dict, List, Optional, Set, Union
 
-from yea import config, context, testspec, ytest
+from yea import config, context, split, testspec, ytest
 from yea.yeadoc import YeadocSnippet, load_tests_from_docstring
 
 logger = logging.getLogger(__name__)
@@ -276,6 +277,22 @@ class Registry:
         if self._yc._args.yeadoc and all_tests:
             self._probe_yeadoc_check()
 
+    def filter_splits(self, tlist: List["ytest.YeaTest"]) -> List["ytest.YeaTest"]:
+        splits = self._yc._args.splits
+        group = self._yc._args.group
+        durations_path = self._cfg.durations_path
+        if not splits or not group or not durations_path:
+            return tlist
+
+        with open(durations_path) as f:
+            durations = json.load(f)
+
+        tlist.sort(key=alphanum_sort)
+        groups = split.least_duration(splits=splits, items=tlist, durations=durations)
+
+        my_tests = groups[group - 1].selected
+        return my_tests
+
     def get_tests(self, include_skip: bool = False) -> List["ytest.YeaTest"]:
         tlist: List["ytest.YeaTest"] = []
         for tname in self._registry:
@@ -293,5 +310,6 @@ class Registry:
 
             tlist.extend(test_perms)
 
+        tlist = self.filter_splits(tlist)
         tlist.sort(key=alphanum_sort)
         return tlist
