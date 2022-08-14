@@ -1,4 +1,5 @@
 """test runner."""
+import json
 import logging
 import os
 import pathlib
@@ -176,6 +177,14 @@ class TestRunner:
         )
         for tc in timing_info:
             print(f"  {tc[1]:<{tlen}s}: {tc[0]:.1f}")
+
+        # if we are recalibrating split tests. save them here
+        durations_path = self._cfg.durations_path
+        store_durations = self._yc._args.store_durations
+        if durations_path and store_durations:
+            timing_dict = {tc.name: tc.elapsed_sec for tc in self._results}
+            with open(durations_path, "w") as f:
+                json.dump(timing_dict, f)
 
         sys.exit(exit_code)
 
