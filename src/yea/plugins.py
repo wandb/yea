@@ -1,9 +1,10 @@
 """Plugins."""
 
 import sys
-from typing import Any, Set
+from typing import Any, List, Set
 
 from yea import context, ytest
+from yea import result
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points  # type: ignore
@@ -75,7 +76,7 @@ class Plugins:
         for p in self._plugin_list:
             p.test_done(yt)
 
-    def test_check(self, yt: "ytest.YeaTest") -> list:
+    def test_check(self, yt: "ytest.YeaTest") -> List[result.ResultData]:
         # ctx = self._backend.get_state()
         test_config = yt.config
         result_list = []
@@ -86,5 +87,5 @@ class Plugins:
                 continue
             result = p.test_check(yt, debug=self._yc._args.debug)
             if result:
-                result_list.extend(result)
+                result_list.append(result)
         return result_list

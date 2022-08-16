@@ -108,9 +108,19 @@ class TestRunner:
         test_cfg = t._test_cfg
         if not test_cfg:
             return
-        result = self._yc.test_check(t)
+        result_list = self._yc.test_check(t)
+
+        failures = []
+        state = {}
+        for result in result_list:
+            if result.failures:
+                failures.extend(result.failures)
+            if result._state:
+                state.update(result._state)
+
         # print("GOTRES", result)
-        result_str = ",".join(result)
+        result_str = ",".join(failures)
+        profile_dict = state.get(":yea:profile")
         # self._results[t._tname] = result_str
         if t._time_end is None or t._time_start is None:
             raise RuntimeError("Test not run")
@@ -118,6 +128,10 @@ class TestRunner:
         tc = junit_xml.TestCase(t.test_id, classname="yea_func", elapsed_sec=elapsed)
         if result_str:
             tc.add_failure_info(message=result_str)
+        if profile_dict:
+            for metric, stats in profile_dict.items():
+                for stat, value in stats.items():
+                    tc.add_property(name=f"{metric}::{stat}", value=value)
         self._results.append(tc)
 
     def run(self, tests: List["ytest.YeaTest"]) -> None:
