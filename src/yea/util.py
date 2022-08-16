@@ -23,7 +23,6 @@ def vendor_setup() -> Callable:
     package_dirs = [os.path.join(vendor_dir, p) for p in vendor_packages]
     for p in [vendor_dir] + package_dirs:
         if p not in sys.path:
-            print("ADD", p)
             sys.path.insert(1, p)
 
     return reset_import_path
