@@ -236,7 +236,7 @@ class TestSuite(object):
             if case.properties:
                 props_element = ET.Element("properties")
                 for attrs in case.properties:
-                    attrs = dict(name=decode(attrs["name"], encoding), value=decode(attrs["value"], encoding)) 
+                    attrs = dict(name=decode(attrs["name"], encoding), value=decode(attrs["value"], encoding))
                     ET.SubElement(props_element, "property", attrs)
                 test_case_element.append(props_element)
 
