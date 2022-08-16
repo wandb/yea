@@ -232,6 +232,14 @@ class TestSuite(object):
                     skipped_element.text = decode(skipped["output"], encoding)
                 test_case_element.append(skipped_element)
 
+            # properties
+            if case.properties:
+                props_element = ET.Element("properties")
+                for attrs in case.properties:
+                    attrs = dict(name=decode(attrs["name"], encoding), value=decode(attrs["value"], encoding)) 
+                    ET.SubElement(props_element, "property", attrs)
+                test_case_element.append(props_element)
+
             # test stdout
             if case.stdout:
                 stdout_element = ET.Element("system-out")
@@ -399,6 +407,7 @@ class TestCase(object):
         self.errors = []
         self.failures = []
         self.skipped = []
+        self.properties = []
         self.allow_multiple_subalements = allow_multiple_subelements
 
     def add_error_info(self, message=None, output=None, error_type=None):
@@ -438,6 +447,12 @@ class TestCase(object):
                 self.failures[0]["output"] = output
             if failure_type:
                 self.failures[0]["type"] = failure_type
+
+    def add_property(self, name, value):
+        prop = {}
+        prop["name"] = name
+        prop["value"] = value
+        self.properties.append(prop)
 
     def add_skipped_info(self, message=None, output=None):
         """Adds a skipped message, output, or both to the test case"""
