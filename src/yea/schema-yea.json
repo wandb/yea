@@ -64,6 +64,12 @@
                 "type": "string"
             }
         },
+        "option": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "assert": {
             "type": "array",
             "items": {
@@ -123,6 +129,12 @@
                         "type": "object"
                     }
                 }
+            }
+        },
+        "trigger": {
+            "type": "array",
+            "items": {
+                "type": "object"
             }
         },
         "depend": {
