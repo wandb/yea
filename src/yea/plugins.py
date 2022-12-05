@@ -54,6 +54,12 @@ class Plugins:
                 continue
             p.monitors_start()
 
+    def monitors_start_test(self, t) -> None:
+        for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
+            p.monitors_start_test(t)
+
     def monitors_stop(self) -> None:
         for p in self._plugin_list:
             if p.name not in self._plugs_needed:
