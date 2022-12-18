@@ -2,7 +2,7 @@ import importlib
 import json
 import multiprocessing as mp
 import os
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, List, Optional, Tuple
 
 
 def _setup_params() -> Dict[str, str]:

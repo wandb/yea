@@ -16,7 +16,6 @@ import requests
 
 from yea import context, registry, testcfg, testspec
 
-
 RE_TESTNAME = re.compile(r"t(?P<id>\d+)_(?P<name>[a-zA-z]\w+)$")
 
 
@@ -314,7 +313,14 @@ class YeaTest:
 
         trigger: List[Union[str, Dict[str, Dict[str, Any]]]] = self._test_cfg.get("trigger", [])
         if trigger:
-            trig_vars: str = ",".join(set(filter(lambda x: x.startswith(":wandb:"), map(lambda p: next(iter(p)) if isinstance(p, dict) else p, trigger))))
+            trig_vars: str = ",".join(
+                set(
+                    filter(
+                        lambda x: x.startswith(":wandb:"),
+                        map(lambda p: next(iter(p)) if isinstance(p, dict) else p, trigger),
+                    )
+                )
+            )
             env["YEA_TRIGGER_VARS"] = trig_vars
 
         plugins = self._test_cfg.get("plugin", [])

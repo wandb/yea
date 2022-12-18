@@ -3,8 +3,7 @@
 import sys
 from typing import Any, List, Set
 
-from yea import context, ytest
-from yea import result
+from yea import context, result, ytest
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points  # type: ignore

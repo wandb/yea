@@ -6,7 +6,6 @@ import heapq
 from typing import Dict, List, NamedTuple, Tuple
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from yea.ytest import YeaTest
 

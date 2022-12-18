@@ -10,7 +10,6 @@ from typing import Any, Generator, List, Optional, Union
 
 from yea import context, util, ytest
 
-
 logger = logging.getLogger(__name__)
 junit_xml = util.vendor_import("wandb_junit_xml")
 

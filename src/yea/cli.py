@@ -6,7 +6,6 @@ from typing import Callable, List, Optional
 
 from yea import __version__, context, registry, runner, ytest
 
-
 if sys.version_info >= (3, 8):
     from typing import Literal
 else:
