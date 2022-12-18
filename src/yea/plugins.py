@@ -53,11 +53,11 @@ class Plugins:
                 continue
             p.monitors_start()
 
-    def monitors_start_test(self, t) -> None:
+    def monitors_start_test(self, yt: "ytest.YeaTest") -> None:
         for p in self._plugin_list:
             if p.name not in self._plugs_needed:
                 continue
-            p.monitors_start_test(t)
+            p.monitors_start_test(yt)
 
     def monitors_stop(self) -> None:
         for p in self._plugin_list:

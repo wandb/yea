@@ -81,8 +81,8 @@ class YeaContext:
     def monitors_start(self) -> None:
         self._plugs.monitors_start()
 
-    def monitors_start_test(self, t) -> None:
-        self._plugs.monitors_start_test(t)
+    def monitors_start_test(self, yt: "ytest.YeaTest") -> None:
+        self._plugs.monitors_start_test(yt)
 
     def monitors_stop(self) -> None:
         self._plugs.monitors_stop()
