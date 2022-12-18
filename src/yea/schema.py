@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-import jsonschema  # type:ignore
+import jsonschema
 from jsonschema import Draft7Validator, validators
 
 testlib_config_jsonschema_fname = Path(__file__).parent / "schema-yea.json"
@@ -15,12 +15,12 @@ with open(testlib_config_jsonschema_fname) as f:
 format_checker = jsonschema.FormatChecker()
 
 
-@format_checker.checks("float")  # type: ignore
+@format_checker.checks("float")
 def float_checker(value: Any) -> bool:
     return isinstance(value, float)
 
 
-@format_checker.checks("integer")  # type: ignore
+@format_checker.checks("integer")
 def int_checker(value: Any) -> bool:
     return isinstance(value, int)
 
