@@ -1,5 +1,5 @@
 include src/yea/schema-*.json
 
-recursive-include src/yea/vendor *.py
+graft src/yea/vendor
 recursive-exclude * __pycache__
 recursive-exclude .tox/ *
