@@ -1,5 +1,5 @@
 include src/yea/schema-*.json
 
-include src/yea/vendor/junit_xml/wandb_junit_xml/__init__.py
+recursive-include src/yea/vendor *.py
 recursive-exclude * __pycache__
 recursive-exclude .tox/ *
