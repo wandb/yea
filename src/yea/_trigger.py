@@ -1,12 +1,12 @@
 import os
+from typing import Dict
 
 import requests
-from typing import Dict
 
 _session = requests.Session()
 
 
-def _sendit(url, data: Dict[str, str]) -> None:
+def _sendit(url: str, data: Dict[str, str]) -> None:
     relay_url = f"{url}/_control"
     prepared_relayed_request = requests.Request(
         method="POST",
