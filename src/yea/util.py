@@ -21,7 +21,6 @@ def vendor_setup() -> Callable:
     vendor_dir = os.path.join(parent_dir, "vendor")
     vendor_packages = ("junit_xml",)
     package_dirs = [os.path.join(vendor_dir, p) for p in vendor_packages]
-    print("DEBUG DIR", os.listdir(package_dirs[0]))
     for p in [vendor_dir] + package_dirs:
         if p not in sys.path:
             sys.path.insert(1, p)
@@ -31,8 +30,6 @@ def vendor_setup() -> Callable:
 
 def vendor_import(name: str) -> Any:
     reset_path = vendor_setup()
-    cwd = os.getcwd()
-    print("DEBUG VENDOR PATH", cwd, sys.path)
     module = import_module(name)
     reset_path()
     return module
