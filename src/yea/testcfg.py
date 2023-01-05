@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-import jsonschema  # type: ignore
+import jsonschema
 
 import yaml
 

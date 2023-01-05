@@ -6,7 +6,6 @@ from typing import Callable, List, Optional
 
 from yea import __version__, context, registry, runner, ytest
 
-
 if sys.version_info >= (3, 8):
     from typing import Literal
 else:
@@ -26,6 +25,7 @@ class CliArgs:
         self.dryrun: bool = args.dryrun
         self.func: Callable = args.func
         self.live: bool = args.live
+        self.mitm: bool = args.mitm
         self.noskip: bool = args.noskip
         self.platform: Optional[str] = args.platform
         self.shard: Optional[str] = args.shard
@@ -75,6 +75,7 @@ def cli() -> None:
     parser.add_argument("--yeadoc", help="scan for docstring tests", action="store_true")
     parser.add_argument("--dryrun", action="store_true", help="Do not do anything")
     parser.add_argument("--live", action="store_true", help="Run against real server")
+    parser.add_argument("--mitm", action="store_true", help="Run against mitm server")
     parser.add_argument("--strict", action="store_true", help="Fail if something happens")
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")

@@ -3,8 +3,7 @@
 import sys
 from typing import Any, List, Set
 
-from yea import context, ytest
-from yea import result
+from yea import context, result, ytest
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points  # type: ignore
@@ -53,6 +52,12 @@ class Plugins:
             if p.name not in self._plugs_needed:
                 continue
             p.monitors_start()
+
+    def monitors_start_test(self, yt: "ytest.YeaTest") -> None:
+        for p in self._plugin_list:
+            if p.name not in self._plugs_needed:
+                continue
+            p.monitors_start_test(yt)
 
     def monitors_stop(self) -> None:
         for p in self._plugin_list:

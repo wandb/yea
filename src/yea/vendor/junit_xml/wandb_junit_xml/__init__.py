@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-import warnings
-from collections import defaultdict
-import sys
 import re
-import xml.etree.ElementTree as ET
+import sys
+import warnings
 import xml.dom.minidom
+import xml.etree.ElementTree as ET
+from collections import defaultdict
 
-from six import u, iteritems, PY2
+from six import PY2, iteritems, u
 
 try:
     # Python 2

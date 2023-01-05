@@ -41,7 +41,7 @@ class Registry:
         self._yeadoc_dict = {}
         self._yeadoc_set = set()
 
-    def _warn(self, msg: str, path: pathlib.Path = None) -> None:
+    def _warn(self, msg: str, path: Optional[pathlib.Path] = None) -> None:
         if path:
             msg = f"{msg} (test: {path})"
         else:
@@ -263,7 +263,7 @@ class Registry:
             if yeadoc_id not in self._yeadoc_set:
                 self._warn(f"Can not find yeadoc test for {yeadoc_id}")
 
-    def probe(self, all_tests: bool = False, tests: List[str] = None) -> None:
+    def probe(self, all_tests: bool = False, tests: Optional[List[str]] = None) -> None:
         tests = tests or []
 
         if self._registry:

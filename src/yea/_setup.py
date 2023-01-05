@@ -2,7 +2,7 @@ import importlib
 import json
 import multiprocessing as mp
 import os
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 def _setup_params() -> Dict[str, str]:
@@ -29,6 +29,14 @@ def _setup_profile() -> Optional[Tuple[str, Dict[str, str]]]:
     p_vals = json.loads(prof_vals)
     params = dict(zip(p_vars, p_vals))
     return (prof_file, params)
+
+
+def _setup_trigger() -> Optional[List[str]]:
+    trig_vars = os.environ.get("YEA_TRIGGER_VARS")
+    if not trig_vars:
+        return None
+    t_vars = trig_vars.split(",")
+    return t_vars
 
 
 def setup_mp(params: Dict[str, str]) -> None:

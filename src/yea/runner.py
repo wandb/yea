@@ -10,7 +10,6 @@ from typing import Any, Generator, List, Optional, Union
 
 from yea import context, util, ytest
 
-
 logger = logging.getLogger(__name__)
 junit_xml = util.vendor_import("wandb_junit_xml")
 
@@ -83,6 +82,7 @@ class TestRunner:
     def _runall(self) -> None:
         for t in self._test_list:
             self._yc.monitors_reset()
+            self._yc.monitors_start_test(t)
             t.run()
             self._capture_result(t)
 
