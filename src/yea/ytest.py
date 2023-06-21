@@ -55,9 +55,9 @@ def download(url: str, fname: str) -> bool:
     print(f"INFO: grabbing {fname} from {url}")
     try:
         with requests.get(url, stream=True) as r:
-            r.raise_for_status()
+            r.raise_for_status()  # type: ignore[attr-defined]
             with open(fname, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
+                for chunk in r.iter_content(chunk_size=8192):  # type: ignore[attr-defined]
                     f.write(chunk)
     except requests.exceptions.HTTPError as e:
         print("ERROR: url download error", url, e)
@@ -94,6 +94,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
         # }
 
     """
+
     # recursively get config values
     def parse(key: str, value: Any) -> Dict[str, Any]:
         if ":" not in key:
@@ -204,7 +205,7 @@ class YeaTest:
         if not options:
             options.append("-qq")
         for req in req_list:
-            cmd_list = ["python", "-m", "pip", "install"]
+            cmd_list = [sys.executable, "-m", "pip", "install"]
             cmd_list.extend(options)
             if " " in req:
                 cmd_list.extend(req.split(" "))
@@ -225,7 +226,7 @@ class YeaTest:
         fname = ".yea-uninstall.txt"
         with open(fname, "w") as f:
             f.writelines(f"{item}\n" for item in req)
-        cmd_list = ["python", "-m", "pip", "uninstall", "-qq", "-y", "-r", fname]
+        cmd_list = [sys.executable, "-m", "pip", "uninstall", "-qq", "-y", "-r", fname]
         exit_code = run_command(cmd_list, timeout=timeout)
         if os.path.exists(fname):
             os.remove(fname)

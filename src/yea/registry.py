@@ -207,7 +207,6 @@ class Registry:
 
         # build up the list of tests that can be run by parsing docstrings
         for tpath in path_dir.glob("*.py"):
-
             # parse the test file using ast
             with open(tpath, encoding="utf8") as f:
                 mod = ast.parse(f.read())
