@@ -33,7 +33,6 @@ def extend_with_default(validator_class):  # type: ignore
     validate_properties = validator_class.VALIDATORS["properties"]
 
     def set_defaults(validator, properties, instance, schema):  # type: ignore
-
         errored = False
         for error in validate_properties(
             validator,

@@ -57,7 +57,7 @@ def download(url: str, fname: str) -> bool:
         with requests.get(url, stream=True) as r:
             r.raise_for_status()  # type: ignore[attr-defined]
             with open(fname, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192): # type: ignore[attr-defined]
+                for chunk in r.iter_content(chunk_size=8192):  # type: ignore[attr-defined]
                     f.write(chunk)
     except requests.exceptions.HTTPError as e:
         print("ERROR: url download error", url, e)
@@ -94,6 +94,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
         # }
 
     """
+
     # recursively get config values
     def parse(key: str, value: Any) -> Dict[str, Any]:
         if ":" not in key:
