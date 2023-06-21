@@ -55,9 +55,9 @@ def download(url: str, fname: str) -> bool:
     print(f"INFO: grabbing {fname} from {url}")
     try:
         with requests.get(url, stream=True) as r:
-            r.raise_for_status()
+            r.raise_for_status()  # type: ignore[attr-defined]
             with open(fname, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
+                for chunk in r.iter_content(chunk_size=8192): # type: ignore[attr-defined]
                     f.write(chunk)
     except requests.exceptions.HTTPError as e:
         print("ERROR: url download error", url, e)
