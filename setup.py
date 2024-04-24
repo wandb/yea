@@ -16,6 +16,7 @@ setup(
         "requests",
         "six",
         "typing_extensions",
+        "uv",
     ],
     package_dir={"": "src"},
     entry_points={
