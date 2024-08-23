@@ -72,3 +72,20 @@ def covercircle(session: nox.Session):
     session.run("cp", ".coverage", "coverage.xml", "cover-results/", external=True)
     session.run("coverage", "report", "--ignore-errors", "--skip-covered")
     session.run("codecov", "-e", "TOXENV", "-F", "unittest")
+
+
+@nox.session()
+def build(session: nox.Session):
+    """Build the package."""
+    session.install("build")
+    session.run("python", "-m", "build")
+
+
+@nox.session()
+def release(session: nox.Session):
+    """Build and publish the package to PyPI."""
+    build(session)
+
+    session.install("twine")
+    session.run("twine", "upload", "dist/*")
+    session.run("rm", "-fr", "build", "dist", external=True)
