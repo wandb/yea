@@ -32,7 +32,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            nox -s test-<< parameters.python >>
+            nox -s tests-<< parameters.python >>
           no_output_timeout: 10m
 
 workflows:
