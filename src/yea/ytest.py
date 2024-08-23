@@ -203,8 +203,6 @@ class YeaTest:
         timeout = self._test_cfg.get("depend", {}).get("pip_install_timeout")
         if not (req_list or options):
             return err
-        if not options:
-            options.append("-qq")
         for req in req_list:
             cmd_list = ["python", "-m", "uv", "pip", "install"]
             cmd_list.extend(options)
@@ -227,7 +225,7 @@ class YeaTest:
         fname = ".yea-uninstall.txt"
         with open(fname, "w") as f:
             f.writelines(f"{item}\n" for item in req)
-        cmd_list = ["python", "-m", "uv", "pip", "uninstall", "-qq", "-y", "-r", fname]
+        cmd_list = ["python", "-m", "uv", "pip", "uninstall", "-y", "-r", fname]
         exit_code = run_command(cmd_list, timeout=timeout)
         if os.path.exists(fname):
             os.remove(fname)
