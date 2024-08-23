@@ -70,13 +70,21 @@ def cli_run(yc: "context.YeaContext") -> None:
 def cli() -> None:
     parser = argparse.ArgumentParser(allow_abbrev=False)
 
-    subparsers = parser.add_subparsers(dest="action", title="action", description="Action to perform")
-    parser.add_argument("--debug", action="store_true", help="Print out extra debug info")
-    parser.add_argument("--yeadoc", help="scan for docstring tests", action="store_true")
+    subparsers = parser.add_subparsers(
+        dest="action", title="action", description="Action to perform"
+    )
+    parser.add_argument(
+        "--debug", action="store_true", help="Print out extra debug info"
+    )
+    parser.add_argument(
+        "--yeadoc", help="scan for docstring tests", action="store_true"
+    )
     parser.add_argument("--dryrun", action="store_true", help="Do not do anything")
     parser.add_argument("--live", action="store_true", help="Run against real server")
     parser.add_argument("--mitm", action="store_true", help="Run against mitm server")
-    parser.add_argument("--strict", action="store_true", help="Fail if something happens")
+    parser.add_argument(
+        "--strict", action="store_true", help="Fail if something happens"
+    )
     parser.add_argument("--shard", help="Specify testing shard")
     parser.add_argument("--suite", help="Specify testing suite")
     parser.add_argument("--platform", help="Specify testing platform")
@@ -86,7 +94,9 @@ def cli() -> None:
     # for split tests (follows pytest-split conventions)
     parser.add_argument("--splits", type=int, help="Number of split workers")
     parser.add_argument("--group", type=int, help="Which split worker are we")
-    parser.add_argument("--store-durations", action="store_true", help="Store split worker test info")
+    parser.add_argument(
+        "--store-durations", action="store_true", help="Store split worker test info"
+    )
 
     parse_list = subparsers.add_parser("list", aliases=["l"], allow_abbrev=False)
     parse_list.add_argument("-a", "--all", action="store_true", help="List all")

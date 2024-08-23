@@ -25,7 +25,9 @@ def int_checker(value: Any) -> bool:
     return isinstance(value, int)
 
 
-validator = Draft7Validator(schema=testlib_config_jsonschema, format_checker=format_checker)
+validator = Draft7Validator(
+    schema=testlib_config_jsonschema, format_checker=format_checker
+)
 
 
 def extend_with_default(validator_class):  # type: ignore
@@ -33,7 +35,6 @@ def extend_with_default(validator_class):  # type: ignore
     validate_properties = validator_class.VALIDATORS["properties"]
 
     def set_defaults(validator, properties, instance, schema):  # type: ignore
-
         errored = False
         for error in validate_properties(
             validator,
@@ -56,4 +57,6 @@ def extend_with_default(validator_class):  # type: ignore
 
 
 DefaultFiller = extend_with_default(Draft7Validator)  # type: ignore
-default_filler = DefaultFiller(schema=testlib_config_jsonschema, format_checker=format_checker)
+default_filler = DefaultFiller(
+    schema=testlib_config_jsonschema, format_checker=format_checker
+)

@@ -1,4 +1,3 @@
-import configparser
 from yea import config
 
 

@@ -10,7 +10,7 @@ def vendor_setup() -> Callable:
     function or you will modify the user's path which is never good. The pattern should be:
     reset_path = vendor_setup()
     # do any vendor imports...
-    reset_path()
+    reset_path().
     """
     original_path = [directory for directory in sys.path]
 

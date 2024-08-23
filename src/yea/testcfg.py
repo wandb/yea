@@ -3,14 +3,12 @@
 from typing import Dict, List
 
 import jsonschema
-
 import yaml
 
 from .schema import default_filler, validator
 
 
 def schema_violations_from_proposed_config(config: Dict) -> List[str]:
-
     schema_violation_messages = []
     for error in validator.iter_errors(config):
         schema_violation_messages.append(f"{error.message}")

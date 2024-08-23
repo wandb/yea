@@ -207,21 +207,24 @@ class Registry:
 
         # build up the list of tests that can be run by parsing docstrings
         for tpath in path_dir.glob("*.py"):
-
             # parse the test file using ast
             with open(tpath, encoding="utf8") as f:
                 mod = ast.parse(f.read())
 
             doc_strings = []
 
-            function_definitions = [node for node in mod.body if isinstance(node, ast.FunctionDef)]
+            function_definitions = [
+                node for node in mod.body if isinstance(node, ast.FunctionDef)
+            ]
             for func in function_definitions:
                 docstr = ast.get_docstring(func) or ""
                 doc_strings.append(docstr)
 
             classes = [node for node in mod.body if isinstance(node, ast.ClassDef)]
             for class_ in classes:
-                methods = [node for node in class_.body if isinstance(node, ast.FunctionDef)]
+                methods = [
+                    node for node in class_.body if isinstance(node, ast.FunctionDef)
+                ]
                 for func in methods:
                     docstr = ast.get_docstring(func) or ""
                     doc_strings.append(docstr)
@@ -258,7 +261,6 @@ class Registry:
 
     def _probe_yeadoc_check(self) -> None:
         """Validate that all found yeadoc descriptions have tests."""
-
         for yeadoc_id in self._yeadoc_dict:
             if yeadoc_id not in self._yeadoc_set:
                 self._warn(f"Can not find yeadoc test for {yeadoc_id}")
@@ -294,7 +296,7 @@ class Registry:
         return my_tests
 
     def get_tests(self, include_skip: bool = False) -> List["ytest.YeaTest"]:
-        tlist: List["ytest.YeaTest"] = []
+        tlist: List[ytest.YeaTest] = []
         for tname in self._registry:
             tname = tname.resolve()
             t = ytest.YeaTest(tname=tname, yc=self._yc)

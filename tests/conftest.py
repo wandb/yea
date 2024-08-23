@@ -3,7 +3,6 @@ import sys
 from typing import Callable, List, Optional
 from unittest import mock
 
-
 if sys.version_info >= (3, 8):
     from typing import Literal
 else:
@@ -41,7 +40,11 @@ def default_cli_args(
         "debug": debug,
         "yeadoc": yeadoc,
         "dryrun": dryrun,
-        "func": func if func is not None else cli_run if action in ("run", "r") else cli_list,
+        "func": func
+        if func is not None
+        else cli_run
+        if action in ("run", "r")
+        else cli_list,
         "live": live,
         "mitm": mitm,
         "platform": platform,

@@ -4,8 +4,8 @@ from unittest import mock
 import pytest
 
 from yea.context import YeaContext
-from yea.runner import TestRunner as Runner  # not to confuse pytest
 from yea.registry import Registry
+from yea.runner import TestRunner as Runner  # not to confuse pytest
 
 
 @pytest.mark.parametrize(

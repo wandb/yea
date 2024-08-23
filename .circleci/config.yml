@@ -1,55 +1,42 @@
 version: 2.1
 
-commands:
-  save-tox-cache:
-    description: "Save tox environment to cache"
-    steps:
-      - save_cache:
-          paths:
-            - ./.tox
-          key: v0.1-toxenv-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
-  restore-tox-cache:
-    description: "Restore tox environment from cache"
-    steps:
-      - restore_cache:
-          keys:
-            - v0.1-toxenv-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
-            - v0.1-toxenv-master-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
-            - v0.1-toxenv-master-{{ .Environment.CIRCLE_JOB }}-
-
-workflows:
-  main:
-    jobs:
-      - test:
-          name: "code-check"
-          image: "python:3.8"
-          toxenv: "black,flake8,mypy"
-      - test:
-          name: "lin-py38"
-          image: "python:3.8"
-          toxenv: "py38,covercircle"
-
 jobs:
+  code-check:
+    docker:
+      - image: "python:3.12"
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: python -m pip install -U nox pip uv
+          no_output_timeout: 5m
+      - run:
+          name: Run ruff
+          command: nox -s code-check
+
   test:
     resource_class: large
     parameters:
-      image:
+      python:
         type: string
-      toxenv:
-        type: string
+        default: "3.12"
     docker:
-      - image: << parameters.image >>
+      - image: "python:<< parameters.python >>"
     working_directory: /mnt/ramdisk
     steps:
       - checkout
       - run:
           name: Install python dependencies
           command: |
-            pip install tox==3.24.0
-      - restore-tox-cache
+            pip install nox
       - run:
           name: Run tests
           command: |
-            tox -v -e << parameters.toxenv >>
+            nox -s test-<< parameters.python >>
           no_output_timeout: 10m
-      - save-tox-cache
+
+workflows:
+  main:
+    jobs:
+      - code-check
+      - test
