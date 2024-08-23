@@ -1,7 +1,5 @@
 import os
 
-import pytest  # type: ignore
-
 import yea.ytest
 
 
@@ -34,7 +32,7 @@ def test_run_command(capsys):
     status_code = yea.ytest.run_command(command_list)
     assert status_code == 0
     out, err = capsys.readouterr()
-    assert "INFO: RUNNING= [\'echo\', \"'hello world'\"]" in out
+    assert "INFO: RUNNING= ['echo', \"'hello world'\"]" in out
     assert "INFO: exit= 0" in out
     assert err == ""
 
@@ -57,5 +55,5 @@ def test_download_error(tmp_path, capsys):
     assert status_code == 1
     assert not os.path.exists(fname)
     out, err = capsys.readouterr()
-    assert f"ERROR: url download error" in out
+    assert "ERROR: url download error" in out
     assert err == ""

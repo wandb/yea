@@ -1,6 +1,4 @@
-"""
-Utilities for parsing a test specification.
-"""
+"""Utilities for parsing a test specification."""
 
 import ast
 import pathlib

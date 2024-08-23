@@ -4,7 +4,7 @@ build/
 dist/
 mypy-results/
 cover-results/
-.tox/
+.nox/
 .idea/
 .coverage
 coverage.xml

@@ -15,7 +15,9 @@ class YeadocSnippet:
     syntax: Optional[str] = None
 
 
-def extract_from_buffer(f: io.TextIOBase, max_num_lines: int = 10000) -> List[YeadocSnippet]:
+def extract_from_buffer(
+    f: io.TextIOBase, max_num_lines: int = 10000
+) -> List[YeadocSnippet]:
     out: List[YeadocSnippet] = []
     previous_nonempty_line = None
     k = 1
@@ -42,7 +44,9 @@ def extract_from_buffer(f: io.TextIOBase, max_num_lines: int = 10000) -> List[Ye
                 if not line:
                     raise RuntimeError("Hit end-of-file prematurely. Syntax error?")
                 if k > max_num_lines:
-                    raise RuntimeError(f"File too large (> {max_num_lines} lines). Set max_num_lines.")
+                    raise RuntimeError(
+                        f"File too large (> {max_num_lines} lines). Set max_num_lines."
+                    )
                 # check if end of block
                 if line.lstrip()[:3] == "```":
                     break

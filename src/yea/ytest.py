@@ -66,8 +66,7 @@ def download(url: str, fname: str) -> bool:
 
 
 def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
-    """
-    Recursively parse a "flat" config with column-separated key name definitions
+    """Recursively parse a "flat" config with column-separated key name definitions
     into a nested dictionary given a prefix.
 
     Example:
@@ -94,6 +93,7 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
         # }
 
     """
+
     # recursively get config values
     def parse(key: str, value: Any) -> Dict[str, Any]:
         if ":" not in key:
@@ -113,7 +113,9 @@ def get_config(config: Dict[str, Any], prefix: str) -> Dict[str, Any]:
                 destination[key] = value
         return destination
 
-    prefixed_items = {k[len(prefix) :]: v for (k, v) in config.items() if k.startswith(prefix)}
+    prefixed_items = {
+        k[len(prefix) :]: v for (k, v) in config.items() if k.startswith(prefix)
+    }
     parsed_items = []
     for k, v in prefixed_items.items():
         parsed_items.append(parse(k, v))
@@ -135,7 +137,7 @@ class YeaTest:
         self._permute_groups: Optional[List[Any]] = None
         self._permute_items: Optional[Tuple[Any, ...]] = None
         self._yearc_list: List[configparser.ConfigParser] = []
-        self._registry: Optional["registry.Registry"] = None
+        self._registry: Optional[registry.Registry] = None
         self._permute_id: str = ""
         self._profile_file: Optional[pathlib.Path] = None
 
@@ -298,11 +300,18 @@ class YeaTest:
 
         # pass profile config as env vars to be loaded by yea.setup() in test
         # NOTE: yea.setup() will not be required in the future (hopefully)
-        profile: List[Union[str, Dict[str, Dict[str, Any]]]] = self._test_cfg.get("profile", [])
+        profile: List[Union[str, Dict[str, Dict[str, Any]]]] = self._test_cfg.get(
+            "profile", []
+        )
         if profile:
-            prof_vars: str = ",".join(map(lambda p: next(iter(p)) if isinstance(p, dict) else p, profile))
+            prof_vars: str = ",".join(
+                map(lambda p: next(iter(p)) if isinstance(p, dict) else p, profile)
+            )
             prof_vals: List[Dict[str, Any]] = list(
-                map(lambda p: next(iter(p.items()))[1] if isinstance(p, dict) else {}, profile)
+                map(
+                    lambda p: next(iter(p.items()))[1] if isinstance(p, dict) else {},
+                    profile,
+                )
             )
             env["YEA_PROFILE_VARS"] = prof_vars
             env["YEA_PROFILE_VALS"] = json.dumps(prof_vals)
@@ -311,13 +320,18 @@ class YeaTest:
             env["YEA_PROFILE_FILE"] = str(prof_file)
             self._profile_file = prof_file
 
-        trigger: List[Union[str, Dict[str, Dict[str, Any]]]] = self._test_cfg.get("trigger", [])
+        trigger: List[Union[str, Dict[str, Dict[str, Any]]]] = self._test_cfg.get(
+            "trigger", []
+        )
         if trigger:
             trig_vars: str = ",".join(
                 set(
                     filter(
                         lambda x: x.startswith(":wandb:"),
-                        map(lambda p: next(iter(p)) if isinstance(p, dict) else p, trigger),
+                        map(
+                            lambda p: next(iter(p)) if isinstance(p, dict) else p,
+                            trigger,
+                        ),
                     )
                 )
             )
@@ -431,7 +445,7 @@ class YeaTest:
         self._covrc = covrc
 
     def _fin(self) -> None:
-        """Reap anything in wandb dir"""
+        """Reap anything in wandb dir."""
         self._yc.test_done(self)
 
     def run(self) -> None:

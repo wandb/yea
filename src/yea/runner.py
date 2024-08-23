@@ -1,4 +1,5 @@
 """test runner."""
+
 import json
 import logging
 import os
@@ -34,7 +35,7 @@ class TestRunner:
         self._test_files: List[str] = []
         # self._results: List[junit_xml.TestCase] = []
         self._results: List = []
-        self._test_list: List["ytest.YeaTest"] = []
+        self._test_list: List[ytest.YeaTest] = []
 
     def prepare(self) -> None:
         if self._yc._cfg._coverage_run_in_process:
