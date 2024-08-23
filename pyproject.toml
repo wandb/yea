@@ -30,7 +30,10 @@ zip-safe = false
 
 [tool.setuptools.package-data]
 "yea" = ["schema-*.json"]
+"yea.vendor" = ["**/*.py"]
 
+[tool.setuptools.exclude-package-data]
+"*" = ["__pycache__", "__pycache__/*"]
 
 [tool.ruff]
 extend-exclude = ["src/yea/vendor/**.py"]
