@@ -51,29 +51,6 @@ def mypy(session: nox.Session):
     )
 
 
-@nox.session(python=PYTHON_VERSIONS)
-def covercircle(session: nox.Session):
-    """Run coverage and upload to codecov."""
-    session.install("pytest", "coverage", "codecov")
-
-    # Passenv equivalent
-    for env_var in ["CI", "CIRCLECI"] + [
-        v for v in session.env if v.startswith("CIRCLE_") or v.startswith("CODECOV_")
-    ]:
-        session.env[env_var] = session.env.get(env_var)
-
-    session.env["CIRCLE_BUILD_NUM"] = session.env.get("CIRCLE_WORKFLOW_ID")
-
-    session.run("mkdir", "-p", "cover-results", external=True)
-    session.run(
-        "bash", "-c", "python -m coverage combine .nox/py*/.coverage*", external=True
-    )
-    session.run("coverage", "xml", "--ignore-errors")
-    session.run("cp", ".coverage", "coverage.xml", "cover-results/", external=True)
-    session.run("coverage", "report", "--ignore-errors", "--skip-covered")
-    session.run("codecov", "-e", "TOXENV", "-F", "unittest")
-
-
 @nox.session()
 def build(session: nox.Session):
     """Build the package."""
